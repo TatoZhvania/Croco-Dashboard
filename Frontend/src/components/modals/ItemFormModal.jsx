@@ -1,0 +1,207 @@
+import React, { useState, useEffect } from 'react';
+import * as lucide from 'lucide-react';
+import { IconComponent } from '../../utils/icons.jsx';
+
+export const ItemFormModal = ({ onClose, itemToEdit, onSave, onUpdate, existingCategories }) => {
+    const [name, setName] = useState(itemToEdit?.name || '');
+    const [url, setUrl] = useState(itemToEdit?.url || '');
+    const [description, setDescription] = useState(itemToEdit?.description || '');
+    const [icon, setIcon] = useState(itemToEdit?.icon || 'Link');
+    const [category, setCategory] = useState(itemToEdit?.category || '');
+    const [categoryIcon, setCategoryIcon] = useState(itemToEdit?.categoryIcon || 'Folder');
+    const [username, setUsername] = useState(itemToEdit?.username || '');
+    const [secretKey, setSecretKey] = useState(itemToEdit?.secretKey || ''); 
+    
+    const [isSaving, setIsSaving] = useState(false);
+    const [isExistingCategorySelected, setIsExistingCategorySelected] = useState(
+        !!itemToEdit && existingCategories.some(c => c.name === itemToEdit.category)
+    );
+    
+    const isEditMode = !!itemToEdit;
+
+    useEffect(() => {
+        if (isExistingCategorySelected) {
+            const selectedCat = existingCategories.find(c => c.name === category);
+            if (selectedCat) {
+                setCategoryIcon(selectedCat.icon);
+            }
+        }
+    }, [category, isExistingCategorySelected, existingCategories]);
+
+    const suggestedItemIcons = ['Home', 'GitBranch', 'Code', 'Server', 'FileText', 'Zap', 'Database', 'Mail'];
+    const suggestedCategoryIcons = ['Folder', 'Tool', 'Server', 'Users', 'Trello', 'LayoutGrid'];
+
+    const handleCategoryChange = (e) => {
+        const value = e.target.value;
+        if (value === 'CREATE_NEW') {
+            setIsExistingCategorySelected(false);
+            setCategory('');
+            setCategoryIcon('Folder');
+        } else {
+            setIsExistingCategorySelected(true);
+            setCategory(value);
+        }
+    };
+
+    const handleSave = async (e) => {
+        e.preventDefault();
+        if (!name || !url) {
+            console.error("Required fields are missing (Name or URL).");
+            return;
+        }
+        setIsSaving(true);
+
+        const data = {
+            name: name.trim(),
+            url: url.trim(),
+            description: description.trim(),
+            icon: icon.trim() || 'Link',
+            category: category.trim() || 'Uncategorized',
+            categoryIcon: categoryIcon.trim() || 'Folder',
+            username: username.trim(),
+            secretKey: secretKey.trim(),
+            orderIndex: itemToEdit?.orderIndex !== undefined ? itemToEdit.orderIndex : Date.now(),
+        };
+
+        try {
+            if (isEditMode) {
+                await onUpdate(itemToEdit.id, data);
+            } else {
+                await onSave(data);
+            }
+            onClose();
+        } catch (error) {
+            console.error(`Error ${isEditMode ? 'updating' : 'adding'} item:`, error);
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-lg p-6 md:p-8 overflow-y-auto max-h-[90vh]">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 border-b pb-2">
+                    {isEditMode ? 'Edit Dashboard Item' : 'Add New Dashboard Item'}
+                </h2>
+                
+                <form onSubmit={handleSave} className="space-y-4">
+                    
+                    {/* Basic Fields */}
+                    <label className="block">
+                        <span className="text-gray-700 dark:text-gray-300 font-medium">Link Name</span>
+                        <input type="text" value={name} onChange={(e) => setName(e.target.value)} required
+                            className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white p-2.5 shadow-sm focus:ring-indigo-500 focus:border-indigo-500" />
+                    </label>
+                    <label className="block">
+                        <span className="text-gray-700 dark:text-gray-300 font-medium">URL</span>
+                        <input type="url" value={url} onChange={(e) => setUrl(e.target.value)} required
+                            className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white p-2.5 shadow-sm focus:ring-indigo-500 focus:border-indigo-500" />
+                    </label>
+                    <label className="block">
+                        <span className="text-gray-700 dark:text-gray-300 font-medium">Description</span>
+                        <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows="2"
+                            className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white p-2.5 shadow-sm focus:ring-indigo-500 focus:border-indigo-500" />
+                    </label>
+
+                    {/* Category Fields Block */}
+                    <div className="p-4 rounded-xl bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 space-y-3">
+                        <div className="flex items-center text-purple-600 dark:text-purple-300 font-semibold mb-3">
+                             <lucide.Tag size={20} className="mr-2" />
+                             Category & Grouping
+                        </div>
+                        
+                        <label className="block">
+                             <span className="text-gray-700 dark:text-gray-300 font-medium mb-1 block">Category Selection</span>
+                            <select 
+                                value={isExistingCategorySelected ? category : 'CREATE_NEW'} 
+                                onChange={handleCategoryChange}
+                                className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white p-2.5 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                            >
+                                <option value="CREATE_NEW">-- Create New Category --</option>
+                                {existingCategories.map((cat) => (
+                                    <option key={cat.name} value={cat.name} className="flex items-center">
+                                        {cat.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </label>
+
+                        {!isExistingCategorySelected && (
+                            <label className="block">
+                                <span className="text-gray-700 dark:text-gray-300 font-medium">New Category Name</span>
+                                <input type="text" value={category} onChange={(e) => setCategory(e.target.value)} placeholder="e.g., Tools, Social"
+                                    className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white p-2.5 shadow-sm focus:ring-indigo-500 focus:border-indigo-500" />
+                            </label>
+                        )}
+                        
+                        {!isExistingCategorySelected && (
+                            <label className="block">
+                                <span className="text-gray-700 dark:text-gray-300 font-medium">Category Icon (Lucide Name)</span>
+                                <input type="text" value={categoryIcon} onChange={(e) => setCategoryIcon(e.target.value)} placeholder="e.g., Folder, Tool, Server"
+                                    className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white p-2.5 shadow-sm focus:ring-indigo-500 focus:border-indigo-500" />
+                                <div className="mt-2 flex items-center justify-between">
+                                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                                        Category Icon Preview: <IconComponent name={categoryIcon} className="w-5 h-5 inline-block text-purple-500 ml-1" />
+                                    </p>
+                                    <div className="text-xs text-gray-400 dark:text-gray-500">
+                                        Suggestions: {suggestedCategoryIcons.join(', ')}
+                                    </div>
+                                </div>
+                            </label>
+                        )}
+                    </div>
+
+                    {/* Item Icon Field */}
+                    <label className="block">
+                        <span className="text-gray-700 dark:text-gray-300 font-medium">Link Icon (Lucide-React)</span>
+                        <input type="text" value={icon} onChange={(e) => setIcon(e.target.value)} placeholder="e.g., Home, Settings, Code" required
+                            className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white p-2.5 shadow-sm focus:ring-indigo-500 focus:border-indigo-500" />
+                        <div className="mt-2 flex items-center justify-between">
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                                Link Icon Preview: <IconComponent name={icon} className="w-5 h-5 inline-block text-indigo-500 ml-1" />
+                            </p>
+                            <div className="text-xs text-gray-400 dark:text-gray-500">
+                                Suggestions: {suggestedItemIcons.join(', ')}
+                            </div>
+                        </div>
+                    </label>
+                    
+                    {/* Credential Fields Block */}
+                    <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 space-y-3">
+                        <div className="flex items-center text-blue-600 dark:text-blue-300 font-semibold">
+                             <lucide.Lock size={20} className="mr-2" />
+                             Optional Login Hints
+                        </div>
+                        
+                        <label className="block">
+                            <span className="text-gray-700 dark:text-gray-300 font-medium">Username (Optional)</span>
+                            <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="e.g., myGitHubHandle"
+                                className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white p-2.5 shadow-sm focus:ring-indigo-500 focus:border-indigo-500" />
+                        </label>
+
+                        <label className="block">
+                            <span className="text-gray-700 dark:text-gray-300 font-medium">Secret Key / Hint (Optional)</span>
+                            <input type="password" value={secretKey} onChange={(e) => setSecretKey(e.target.value)} placeholder="e.g., last 4 digits of token or a hint"
+                                className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white p-2.5 shadow-sm focus:ring-indigo-500 focus:border-indigo-500" />
+                        </label>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex justify-end space-x-3 pt-4">
+                        <button type="button" onClick={onClose} disabled={isSaving}
+                            className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition duration-150" > Cancel </button>
+                        <button type="submit" disabled={isSaving}
+                            className="px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 transition duration-150 disabled:opacity-50 flex items-center" >
+                            {isSaving ? (
+                                <> <lucide.Loader2 className="w-4 h-4 mr-2 animate-spin" /> Saving... </>
+                            ) : (
+                                <> <IconComponent name={isEditMode ? 'Save' : 'Plus'} size={20} className="mr-1" /> 
+                                    {isEditMode ? 'Save Changes' : 'Add Item'} </>
+                            )}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+};
