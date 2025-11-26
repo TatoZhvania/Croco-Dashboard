@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import * as lucide from 'lucide-react';
-import { IconComponent } from '../../utils/icons.jsx';
+import { IconComponent } from '../../utils/icons.jsx'; // Updated import
 import { copyToClipboard } from '../../utils/clipboard.jsx';
 
 export const DashboardItem = ({ item, onDelete, onEdit, isEditMode, onDropItem }) => {
@@ -107,7 +107,11 @@ export const DashboardItem = ({ item, onDelete, onEdit, isEditMode, onDropItem }
 
             {/* Icon and Name */}
             <div className="flex items-center space-x-3 mb-3">
-                <IconComponent name={icon} className="w-8 h-8 text-indigo-500 dark:text-indigo-300" />
+                <IconComponent 
+                    name={icon} 
+                    className="w-8 h-8 text-indigo-500 dark:text-indigo-300" 
+                    size={32}
+                />
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-white truncate">
                     {name}
                 </h3>

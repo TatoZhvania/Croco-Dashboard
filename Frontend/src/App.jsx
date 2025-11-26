@@ -222,7 +222,7 @@ export default function App() {
                 isCollapsed={collapsedCategories[category] === true}
                 isEditMode={isEditMode}
                 onToggleCollapse={toggleCollapse}
-                onDeleteCategory={setCategoryToDelete}
+                onDeleteCategory={handleTriggerDeleteCategory}
                 onDeleteItem={handleTriggerDeleteItem}
                 onEditItem={setEditingItem}
                 onDropItem={handleDropItem}

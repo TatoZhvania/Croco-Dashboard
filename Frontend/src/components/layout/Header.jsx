@@ -43,7 +43,7 @@ export const Header = ({
                 <div className="w-full lg:w-1/4 flex justify-center lg:justify-end space-x-3">
                     
                     {/* Theme Toggle Button */}
-                    {/* <ThemeToggle theme={theme} toggleTheme={toggleTheme} /> */}
+                    <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
                     
                     {/* Edit Mode Toggle Button */}
                     <button

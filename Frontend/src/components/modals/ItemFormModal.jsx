@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import * as lucide from 'lucide-react';
-import { IconComponent } from '../../utils/icons.jsx';
+import { IconComponent } from '../../utils/icons.jsx'; // Only import from utils
 
 export const ItemFormModal = ({ onClose, itemToEdit, onSave, onUpdate, existingCategories }) => {
     const [name, setName] = useState(itemToEdit?.name || '');
@@ -28,8 +28,7 @@ export const ItemFormModal = ({ onClose, itemToEdit, onSave, onUpdate, existingC
         }
     }, [category, isExistingCategorySelected, existingCategories]);
 
-    const suggestedItemIcons = ['Home', 'GitBranch', 'Code', 'Server', 'FileText', 'Zap', 'Database', 'Mail'];
-    const suggestedCategoryIcons = ['Folder', 'Tool', 'Server', 'Users', 'Trello', 'LayoutGrid'];
+    const suggestedItemIcons = ['GitHub', 'Docker', 'Python', 'AWS',];
 
     const handleCategoryChange = (e) => {
         const value = e.target.value;
@@ -55,7 +54,7 @@ export const ItemFormModal = ({ onClose, itemToEdit, onSave, onUpdate, existingC
             name: name.trim(),
             url: url.trim(),
             description: description.trim(),
-            icon: icon.trim() || 'Link',
+            icon: icon.trim() || 'GitHub',
             category: category.trim() || 'Uncategorized',
             categoryIcon: categoryIcon.trim() || 'Folder',
             username: username.trim(),
@@ -79,7 +78,7 @@ export const ItemFormModal = ({ onClose, itemToEdit, onSave, onUpdate, existingC
 
     return (
         <div className="fixed inset-0 bg-gray-900 bg-opacity-70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-lg p-6 md:p-8 overflow-y-auto max-h-[90vh]">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-3xl p-6 md:p-8 overflow-y-auto max-h-[90vh]">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 border-b pb-2">
                     {isEditMode ? 'Edit Dashboard Item' : 'Add New Dashboard Item'}
                 </h2>
@@ -136,16 +135,13 @@ export const ItemFormModal = ({ onClose, itemToEdit, onSave, onUpdate, existingC
                         
                         {!isExistingCategorySelected && (
                             <label className="block">
-                                <span className="text-gray-700 dark:text-gray-300 font-medium">Category Icon (Lucide Name)</span>
-                                <input type="text" value={categoryIcon} onChange={(e) => setCategoryIcon(e.target.value)} placeholder="e.g., Folder, Tool, Server"
+                                <span className="text-gray-700 dark:text-gray-300 font-medium">Category Icon</span>
+                                <input type="text" value={categoryIcon} onChange={(e) => setCategoryIcon(e.target.value)} placeholder="e.g., Folder, GitHub, Docker"
                                     className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white p-2.5 shadow-sm focus:ring-indigo-500 focus:border-indigo-500" />
                                 <div className="mt-2 flex items-center justify-between">
                                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                                        Category Icon Preview: <IconComponent name={categoryIcon} className="w-5 h-5 inline-block text-purple-500 ml-1" />
+                                        Category Icon Preview: <IconComponent name={categoryIcon} className="w-5 h-5 inline-block text-purple-500 ml-1" size={20} />
                                     </p>
-                                    <div className="text-xs text-gray-400 dark:text-gray-500">
-                                        Suggestions: {suggestedCategoryIcons.join(', ')}
-                                    </div>
                                 </div>
                             </label>
                         )}
@@ -153,15 +149,20 @@ export const ItemFormModal = ({ onClose, itemToEdit, onSave, onUpdate, existingC
 
                     {/* Item Icon Field */}
                     <label className="block">
-                        <span className="text-gray-700 dark:text-gray-300 font-medium">Link Icon (Lucide-React)</span>
-                        <input type="text" value={icon} onChange={(e) => setIcon(e.target.value)} placeholder="e.g., Home, Settings, Code" required
-                            className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white p-2.5 shadow-sm focus:ring-indigo-500 focus:border-indigo-500" />
+                        <span className="text-gray-700 dark:text-gray-300 font-medium">Link Icon</span>
+                        <input
+                            type="text"
+                            value={icon}
+                            onChange={(e) => setIcon(e.target.value)}
+                            placeholder="e.g., GitHub, React, Docker, AWS"
+                            className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white p-2.5 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                        />
                         <div className="mt-2 flex items-center justify-between">
                             <p className="text-sm text-gray-500 dark:text-gray-400">
-                                Link Icon Preview: <IconComponent name={icon} className="w-5 h-5 inline-block text-indigo-500 ml-1" />
+                                Current Icon Preview: <IconComponent name={icon} className="w-5 h-5 inline-block text-indigo-500 ml-1" size={20} />
                             </p>
                             <div className="text-xs text-gray-400 dark:text-gray-500">
-                                Suggestions: {suggestedItemIcons.join(', ')}
+                                Try: {suggestedItemIcons.join(', ')}
                             </div>
                         </div>
                     </label>
