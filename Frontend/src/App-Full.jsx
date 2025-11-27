@@ -565,7 +565,7 @@ const ItemFormModal = ({ onClose, itemToEdit, onSave, onUpdate, existingCategori
                         {!isExistingCategorySelected && (
                             <label className="block">
                                 <span className="text-gray-700 dark:text-gray-300 font-medium">New Category Name</span>
-                                <input type="text" value={category} onChange={(e) => setCategory(e.target.value)} placeholder="e.g., Tools, Social"
+                                <input type="text" value={category} onChange={(e) => setCategory(e.target.value)} placeholder="Choose or Create New..."
                                     className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white p-2.5 shadow-sm focus:ring-indigo-500 focus:border-indigo-500" />
                             </label>
                         )}
@@ -612,13 +612,13 @@ const ItemFormModal = ({ onClose, itemToEdit, onSave, onUpdate, existingCategori
                         
                         <label className="block">
                             <span className="text-gray-700 dark:text-gray-300 font-medium">Username (Optional)</span>
-                            <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="e.g., myGitHubHandle"
+                            <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="e.g., *admin*"
                                 className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white p-2.5 shadow-sm focus:ring-indigo-500 focus:border-indigo-500" />
                         </label>
 
                         <label className="block">
-                            <span className="text-gray-700 dark:text-gray-300 font-medium">Secret Key / Hint (Optional)</span>
-                            <input type="password" value={secretKey} onChange={(e) => setSecretKey(e.target.value)} placeholder="e.g., last 4 digits of token or a hint"
+                            <span className="text-gray-700 dark:text-gray-300 font-medium">Secret Key / Password (Optional)</span>
+                            <input type="password" value={secretKey} onChange={(e) => setSecretKey(e.target.value)} placeholder="e.g., *pass*"
                                 className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white p-2.5 shadow-sm focus:ring-indigo-500 focus:border-indigo-500" />
                         </label>
                     </div>

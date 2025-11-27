@@ -1,5 +1,6 @@
 import React from 'react';
-import * as lucide from 'lucide-react';
+import { FiAlertTriangle } from "react-icons/fi";
+import { FiTrash2 } from "react-icons/fi";
 
 export const ConfirmationModal = ({ item, categoryName, onConfirm, onCancel, type = 'item' }) => {
     const isCategory = type === 'category';
@@ -15,7 +16,7 @@ export const ConfirmationModal = ({ item, categoryName, onConfirm, onCancel, typ
         <div className="fixed inset-0 bg-red-900 bg-opacity-30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-sm p-6 space-y-4 border border-red-500">
                 <div className="flex items-center space-x-3 text-red-600 dark:text-red-400">
-                    <lucide.AlertTriangle size={24} />
+                    <FiAlertTriangle size={24} />
                     <h3 className="text-xl font-bold text-gray-900 dark:text-white">{title}</h3>
                 </div>
                 <p className="text-gray-700 dark:text-gray-300">
@@ -32,7 +33,7 @@ export const ConfirmationModal = ({ item, categoryName, onConfirm, onCancel, typ
                         onClick={() => onConfirm(isCategory ? categoryName : item.id)}
                         className="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 transition duration-150 flex items-center"
                     >
-                        <lucide.Trash2 size={18} className="mr-2" />
+                        <FiTrash2 size={18} className="mr-2" />
                         {confirmText}
                     </button>
                 </div>

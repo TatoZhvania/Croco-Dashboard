@@ -1,32 +1,26 @@
 import React from 'react';
-import { ThemeToggle } from '../common/ThemeToggle.jsx';
 
 export const Footer = ({ 
     theme, 
     toggleTheme 
 }) => {
     return (
-        <footer className="fixed bottom-0 left-0 right-0 z-50 border-t border-gray-300 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-gray-900/60">
-            <div className="w-full px-5 sm:px-12">
-                <div className="flex h-10 flex-row justify-between items-center">
+        <footer className="fixed bottom-0 left-0 right-0 z-50">
+            <div className="px-2 sm:px-4 pb-2">
+                <div className="flex items-center justify-between max-w-9xl mx-auto rounded-xl bg-gray-100/70 backdrop-blur dark:bg-gray-800/70 shadow-lg p-3">
                     {/* Left Section: Author */}
-                    <div className="text-center sm:text-left">
-                        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                    <div className="text-left">
+                        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">
                             Made by <span className="font-semibold text-indigo-600 dark:text-indigo-400">T.Zhvania</span>
                         </p>
                     </div>
 
                     {/* Middle Section: Copyright */}
                     <div className="text-center">
-                        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">
                             © {new Date().getFullYear()} All Rights Reserved
                         </p>
                     </div>
-
-                    {/* Right Section: Dark Mode Toggle */}
-                    {/* <div className="text-center sm:text-right">
-                        <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
-                    </div> */}
                 </div>
             </div>
         </footer>

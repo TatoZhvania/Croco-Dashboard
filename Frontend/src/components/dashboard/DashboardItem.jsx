@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import * as lucide from 'lucide-react';
-import { IconComponent } from '../../utils/icons.jsx'; // Updated import
+import { IconComponent } from '../../utils/icons.jsx';
 import { copyToClipboard } from '../../utils/clipboard.jsx';
+import { FaRegEdit } from "react-icons/fa";
+import { FiTrash2 } from "react-icons/fi";
+import { FaCheck } from "react-icons/fa";
+import { FaUser } from "react-icons/fa";
+import { FaKey } from "react-icons/fa";
+
 
 export const DashboardItem = ({ item, onDelete, onEdit, isEditMode, onDropItem }) => {
     const { id, name, url, description, icon, username, secretKey } = item;
@@ -75,8 +80,8 @@ export const DashboardItem = ({ item, onDelete, onEdit, isEditMode, onDropItem }
             onDragOver={isEditMode ? handleDragOver : undefined}
             onDragLeave={isEditMode ? handleDragLeave : undefined}
             onDrop={isEditMode ? handleDrop : undefined}
-            className={`group bg-white/50 dark:bg-gray-800/70 p-4 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg hover:shadow-2xl hover:border-indigo-400 transition duration-300 cursor-pointer backdrop-blur-sm relative overflow-hidden flex flex-col justify-between
-                ${isEditMode ? 'ring-2 ring-yellow-500 border-yellow-300 hover:shadow-yellow-500/50 cursor-move' : ''}
+            className={`group bg-white/50 dark:bg-gray-800/70 p-4 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg hover:shadow-2xl hover:border-indigo-400 transition duration-300 ease-out cursor-pointer backdrop-blur-sm relative overflow-hidden flex flex-col justify-between transform hover:-translate-y-1
+                ${isEditMode ? 'ring-2 ring-yellow-500 border-yellow-300 hover:shadow-yellow-500/50 cursor-move hover:-translate-y-0' : ''}
             `}
         >
             
@@ -90,7 +95,7 @@ export const DashboardItem = ({ item, onDelete, onEdit, isEditMode, onDropItem }
                     className="text-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-full bg-white/70 dark:bg-gray-900/70 hover:bg-white dark:hover:bg-gray-700"
                     title="Edit Item"
                 >
-                    <lucide.Edit size={16} />
+                    <FaRegEdit size={16} />
                 </button>
 
                 <button
@@ -101,7 +106,7 @@ export const DashboardItem = ({ item, onDelete, onEdit, isEditMode, onDropItem }
                     className="text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-full bg-white/70 dark:bg-gray-900/70 hover:bg-white dark:hover:bg-gray-700"
                     title="Delete Item"
                 >
-                    <lucide.Trash2 size={16} />
+                    <FiTrash2 size={16} />
                 </button>
             </div>
 
@@ -109,7 +114,7 @@ export const DashboardItem = ({ item, onDelete, onEdit, isEditMode, onDropItem }
             <div className="flex items-center space-x-3 mb-3">
                 <IconComponent 
                     name={icon} 
-                    className="w-8 h-8 text-indigo-500 dark:text-indigo-300" 
+                    className="text-indigo-500 dark:text-indigo-300" 
                     size={32}
                 />
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-white truncate">
@@ -132,9 +137,9 @@ export const DashboardItem = ({ item, onDelete, onEdit, isEditMode, onDropItem }
                             title="Copy Username to Clipboard"
                         >
                             {copiedField === 'username' ? (
-                                <><lucide.Check size={14} className="mr-1" /> Copied!</>
+                                <><FaCheck size={14} className="mr-1" /> Copied!</>
                             ) : (
-                                <><lucide.User size={14} className="mr-1" /> Copy User</>
+                                <><FaUser size={14} className="mr-1" /> Copy User</>
                             )}
                         </button>
                     )}
@@ -145,9 +150,9 @@ export const DashboardItem = ({ item, onDelete, onEdit, isEditMode, onDropItem }
                             title="Copy Secret Key to Clipboard"
                         >
                             {copiedField === 'secretKey' ? (
-                                <><lucide.Check size={14} className="mr-1" /> Copied!</>
+                                <><FaCheck size={14} className="mr-1" /> Copied!</>
                             ) : (
-                                <><lucide.Key size={14} className="mr-1" /> Copy Secret</>
+                                <><FaKey size={14} className="mr-1" /> Copy Secret</>
                             )}
                         </button>
                     )}
@@ -155,7 +160,7 @@ export const DashboardItem = ({ item, onDelete, onEdit, isEditMode, onDropItem }
             )}
 
             {/* URL Tag */}
-            <div className="flex justify-between items-center text-xs mt-3">
+            <div className="flex justify-between items-center text-s mt-3">
                 <div className="text-indigo-600 dark:text-indigo-400 bg-indigo-100 dark:bg-indigo-900/50 px-2 py-0.5 rounded-full inline-block self-start">
                     {(url.startsWith('http://') || url.startsWith('https://')) 
                         ? (new URL(url).hostname || url)

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import * as lucide from 'lucide-react';
 import { IconComponent } from '../../utils/icons.jsx'; // Only import from utils
+import { FaTag } from "react-icons/fa6";
+import { FaLock } from "react-icons/fa";
+import { RiLoader2Fill } from "react-icons/ri";
 
 export const ItemFormModal = ({ onClose, itemToEdit, onSave, onUpdate, existingCategories }) => {
     const [name, setName] = useState(itemToEdit?.name || '');
@@ -28,7 +30,7 @@ export const ItemFormModal = ({ onClose, itemToEdit, onSave, onUpdate, existingC
         }
     }, [category, isExistingCategorySelected, existingCategories]);
 
-    const suggestedItemIcons = ['GitHub', 'Docker', 'Python', 'AWS',];
+    const suggestedItemIcons = ['Argo', 'Docker', 'Grafana',];
 
     const handleCategoryChange = (e) => {
         const value = e.target.value;
@@ -105,7 +107,7 @@ export const ItemFormModal = ({ onClose, itemToEdit, onSave, onUpdate, existingC
                     {/* Category Fields Block */}
                     <div className="p-4 rounded-xl bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 space-y-3">
                         <div className="flex items-center text-purple-600 dark:text-purple-300 font-semibold mb-3">
-                             <lucide.Tag size={20} className="mr-2" />
+                             <FaTag size={20} className="mr-2" />
                              Category & Grouping
                         </div>
                         
@@ -136,7 +138,7 @@ export const ItemFormModal = ({ onClose, itemToEdit, onSave, onUpdate, existingC
                         {!isExistingCategorySelected && (
                             <label className="block">
                                 <span className="text-gray-700 dark:text-gray-300 font-medium">Category Icon</span>
-                                <input type="text" value={categoryIcon} onChange={(e) => setCategoryIcon(e.target.value)} placeholder="e.g., Folder, GitHub, Docker"
+                                <input type="text" value={categoryIcon} onChange={(e) => setCategoryIcon(e.target.value)} placeholder="Icon Name..."
                                     className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white p-2.5 shadow-sm focus:ring-indigo-500 focus:border-indigo-500" />
                                 <div className="mt-2 flex items-center justify-between">
                                     <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -154,7 +156,7 @@ export const ItemFormModal = ({ onClose, itemToEdit, onSave, onUpdate, existingC
                             type="text"
                             value={icon}
                             onChange={(e) => setIcon(e.target.value)}
-                            placeholder="e.g., GitHub, React, Docker, AWS"
+                            placeholder="Icon Name..."
                             className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white p-2.5 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                         />
                         <div className="mt-2 flex items-center justify-between">
@@ -170,7 +172,7 @@ export const ItemFormModal = ({ onClose, itemToEdit, onSave, onUpdate, existingC
                     {/* Credential Fields Block */}
                     <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 space-y-3">
                         <div className="flex items-center text-blue-600 dark:text-blue-300 font-semibold">
-                             <lucide.Lock size={20} className="mr-2" />
+                             <FaLock size={20} className="mr-2" />
                              Optional Login Hints
                         </div>
                         
@@ -194,7 +196,7 @@ export const ItemFormModal = ({ onClose, itemToEdit, onSave, onUpdate, existingC
                         <button type="submit" disabled={isSaving}
                             className="px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 transition duration-150 disabled:opacity-50 flex items-center" >
                             {isSaving ? (
-                                <> <lucide.Loader2 className="w-4 h-4 mr-2 animate-spin" /> Saving... </>
+                                <> <RiLoader2Fill className="w-4 h-4 mr-2 animate-spin" /> Saving... </>
                             ) : (
                                 <> <IconComponent name={isEditMode ? 'Save' : 'Plus'} size={20} className="mr-1" /> 
                                     {isEditMode ? 'Save Changes' : 'Add Item'} </>

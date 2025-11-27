@@ -1,6 +1,9 @@
 import React from 'react';
-import * as lucide from 'lucide-react';
+import { IconComponent } from '../../utils/icons.jsx';
 import { DashboardItem } from './DashboardItem.jsx';
+
+// We'll use react-icons for the collapse and trash icons too
+import { FaChevronRight, FaChevronDown, FaTrash } from 'react-icons/fa';
 
 export const CategorySection = ({ 
     category, 
@@ -16,8 +19,7 @@ export const CategorySection = ({
     onCategoryDragOver,
     onCategoryDragLeave
 }) => {
-    const Icon = isCollapsed ? lucide.ChevronRight : lucide.ChevronDown;
-    const CategoryIcon = lucide[categoryData.icon] || lucide.Folder;
+    const CollapseIcon = isCollapsed ? FaChevronRight : FaChevronDown;
 
     return (
         <section 
@@ -36,8 +38,12 @@ export const CategorySection = ({
                     className="flex items-center space-x-3 group hover:text-indigo-900 dark:hover:text-indigo-100 transition duration-200"
                     title={`Toggle visibility for ${category}`}
                 >
-                    <Icon size={24} className="text-indigo-500 transition-transform group-hover:scale-110" />
-                    <CategoryIcon size={24} className="text-purple-500 dark:text-purple-300" />
+                    <CollapseIcon size={20} className="text-indigo-500 transition-transform group-hover:scale-110" />
+                    <IconComponent 
+                        name={categoryData.icon} 
+                        className="text-purple-500 dark:text-purple-300 w-8 h-8" 
+                        size={20}
+                    />
                     <span>
                         {category} 
                         <span className="text-base font-normal opacity-80 ml-2">
@@ -52,7 +58,7 @@ export const CategorySection = ({
                     className="p-1 rounded-full text-red-500 hover:bg-red-500 hover:text-white transition duration-200"
                     title={`Delete all ${categoryData.items.length} items in category: ${category}`}
                 >
-                    <lucide.Trash2 size={20} />
+                    <FaTrash size={16} />
                 </button>
             </div>
 

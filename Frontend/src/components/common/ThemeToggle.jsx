@@ -1,9 +1,9 @@
 import React from 'react';
-import * as lucide from 'lucide-react';
+import { FaSun, FaMoon } from 'react-icons/fa';
 
 export const ThemeToggle = ({ theme, toggleTheme }) => {
     const isDark = theme === 'dark';
-    const Icon = isDark ? lucide.Sun : lucide.Moon;
+    const Icon = isDark ? FaSun : FaMoon;
 
     return (
         <button
