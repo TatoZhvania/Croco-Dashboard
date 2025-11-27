@@ -35,10 +35,13 @@ def setup_database():
             category_icon VARCHAR(50),
             username VARCHAR(255),
             secret_key TEXT,
-            order_index FLOAT
+            order_index DOUBLE
         );
         """
         cursor.execute(create_table_query)
+        # Ensure existing deployments upgrade from FLOAT to DOUBLE so that
+        # large order_index values (used for drag/drop) retain precision.
+        cursor.execute("ALTER TABLE dashboard_items MODIFY COLUMN order_index DOUBLE")
         conn.commit()
     except Error as e:
         print(f"Error setting up database: {e}")

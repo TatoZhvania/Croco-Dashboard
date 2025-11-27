@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import axios from 'axios';
 import { API_BASE_URL } from '../config/api.jsx';
 
 export const useApiDashboardItems = () => {
@@ -14,14 +15,10 @@ export const useApiDashboardItems = () => {
 
         while (retries < maxRetries) {
             try {
-                const response = await fetch(API_BASE_URL);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                let data = await response.json();
+                const response = await axios.get(API_BASE_URL);
                 
                 // Map database fields to React component fields
-                data = data.map((item, index) => ({
+                const data = response.data.map((item, index) => ({
                     ...item,
                     categoryIcon: item.category_icon || 'Folder',
                     secretKey: item.secret_key || '',
@@ -49,43 +46,36 @@ export const useApiDashboardItems = () => {
 
     const addItem = useCallback(async (newItemData) => {
         try {
-            const response = await fetch(API_BASE_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(newItemData),
+            await axios.post(API_BASE_URL, newItemData, {
+                headers: { 'Content-Type': 'application/json' }
             });
-            if (!response.ok) throw new Error("Failed to add item to API.");
             fetchData();
-        } catch (e) {
-            console.error("Error adding item:", e);
+        } catch (err) {
+            console.error("Error adding item:", err);
             setError("Could not add item. API connection issue.");
         }
     }, [fetchData]);
 
     const updateItem = useCallback(async (itemId, updatedData) => {
         try {
-            const response = await fetch(`${API_BASE_URL}/${itemId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(updatedData),
+            console.log('[API] Updating item', { itemId, updatedData });
+            await axios.put(`${API_BASE_URL}/${itemId}`, updatedData, {
+                headers: { 'Content-Type': 'application/json' }
             });
-            if (!response.ok) throw new Error("Failed to update item via API.");
+            console.log('[API] Update success', { itemId });
             fetchData();
-        } catch (e) {
-            console.error("Error updating item:", e);
+        } catch (err) {
+            console.error("Error updating item:", err);
             setError("Could not update item. API connection issue.");
         }
     }, [fetchData]);
 
     const deleteItem = useCallback(async (itemId) => {
         try {
-            const response = await fetch(`${API_BASE_URL}/${itemId}`, {
-                method: 'DELETE',
-            });
-            if (!response.ok) throw new Error("Failed to delete item via API.");
+            await axios.delete(`${API_BASE_URL}/${itemId}`);
             fetchData();
-        } catch (e) {
-            console.error("Error deleting item:", e);
+        } catch (err) {
+            console.error("Error deleting item:", err);
             setError("Could not delete item. API connection issue.");
         }
     }, [fetchData]);
@@ -96,20 +86,20 @@ export const useApiDashboardItems = () => {
 
         try {
             const deletePromises = itemsToDelete.map(item => 
-                fetch(`${API_BASE_URL}/${item.id}`, { method: 'DELETE' })
+                axios.delete(`${API_BASE_URL}/${item.id}`)
             );
 
             const results = await Promise.allSettled(deletePromises);
             
-            const failedDeletes = results.filter(r => r.status === 'rejected' || !r.value.ok);
+            const failedDeletes = results.filter(r => r.status === 'rejected');
             
             if (failedDeletes.length > 0) {
                  console.warn(`${failedDeletes.length} deletions failed.`);
             }
 
             fetchData();
-        } catch (e) {
-            console.error(`Error deleting category ${categoryName}:`, e);
+        } catch (err) {
+            console.error(`Error deleting category ${categoryName}:`, err);
             setError("Could not delete category items. API connection issue.");
         }
     }, [items, fetchData]);

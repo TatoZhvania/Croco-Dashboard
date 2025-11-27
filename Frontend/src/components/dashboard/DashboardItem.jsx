@@ -61,6 +61,7 @@ export const DashboardItem = ({ item, onDelete, onEdit, isEditMode, onDropItem }
 
     const handleDrop = (e) => {
         e.preventDefault();
+        // e.stopPropagation();
         e.currentTarget.classList.remove('shadow-xl', 'ring-2', 'ring-indigo-500');
         if (isEditMode) {
             const draggedItemId = e.dataTransfer.getData('text/plain');

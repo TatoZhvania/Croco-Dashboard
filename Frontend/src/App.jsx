@@ -147,40 +147,88 @@ export default function App() {
 
   // Drag and Drop Logic
   const handleDropItem = useCallback(async (draggedItemId, targetItemId, targetCategory) => {
-    const draggedItem = items.find(i => i.id === draggedItemId);
-    const targetItem = items.find(i => i.id === targetItemId);
-    if (!draggedItem || !targetItem) return;
+    const sameId = (item, id) => String(item.id) === String(id);
 
-    if (draggedItem.category !== targetCategory) {
+    // Normalize ids because drag data comes back as strings
+    const draggedItem = items.find(i => sameId(i, draggedItemId));
+    const targetItem = items.find(i => sameId(i, targetItemId));
+    if (!draggedItem || !targetItem) {
+      console.warn('[DragDrop] Items not found', { draggedItemId, targetItemId });
+      return;
+    }
+
+    const resolvedCategory = targetCategory ?? targetItem.category ?? '';
+    console.log('[DragDrop] drop event detected', {
+      draggedItemId,
+      targetItemId,
+      resolvedCategory,
+      draggedCategory: draggedItem.category
+    });
+
+    if (draggedItem.category !== resolvedCategory) {
+      console.log('[DragDrop] moving item between categories', {
+        from: draggedItem.category,
+        to: resolvedCategory
+      });
       await updateItem(draggedItemId, {
-        category: targetCategory,
+        category: resolvedCategory,
         categoryIcon: targetItem.category_icon
       });
       return;
     }
 
+    // SAME CATEGORY REORDERING
     const currentCategoryItems = items
-      .filter(i => i.category === targetCategory)
+      .filter(i => i.category === resolvedCategory)
       .sort((a, b) => a.orderIndex - b.orderIndex);
 
-    const draggedIndex = currentCategoryItems.findIndex(i => i.id === draggedItemId);
-    const targetIndex = currentCategoryItems.findIndex(i => i.id === targetItemId);
+    const draggedIndex = currentCategoryItems.findIndex(i => sameId(i, draggedItemId));
+    const targetIndex = currentCategoryItems.findIndex(i => sameId(i, targetItemId));
+    
+    if (draggedIndex === -1 || targetIndex === -1) {
+      console.warn('[DragDrop] Item indices not found in category', { draggedIndex, targetIndex, draggedItemId, targetItemId });
+      return;
+    }
+
+    // If the item is being dropped on itself or adjacent with no movement needed, skip
+    if (draggedIndex === targetIndex) {
+      console.log('[DragDrop] Item dropped on itself, skipping update');
+      return;
+    }
 
     currentCategoryItems.splice(draggedIndex, 1);
     currentCategoryItems.splice(targetIndex, 0, draggedItem);
 
+    // Compute a new order index between neighbors to avoid full resequencing
+    const prevOrder = currentCategoryItems[targetIndex - 1]?.orderIndex;
+    const nextOrder = currentCategoryItems[targetIndex + 1]?.orderIndex;
+
     let newOrderIndex;
     if (targetIndex === 0) {
-      newOrderIndex = (currentCategoryItems[1]?.orderIndex || 0) - 1;
+      // Place before the next item
+      newOrderIndex = (nextOrder ?? 0) - 1;
     } else if (targetIndex === currentCategoryItems.length - 1) {
-      newOrderIndex = (currentCategoryItems[targetIndex - 1]?.orderIndex || 0) + 1;
+      // Place after the previous item
+      newOrderIndex = (prevOrder ?? 0) + 1;
     } else {
-      const prevIndex = currentCategoryItems[targetIndex - 1]?.orderIndex || 0;
-      const nextIndex = currentCategoryItems[targetIndex + 1]?.orderIndex || (prevIndex + 2);
-      newOrderIndex = (prevIndex + nextIndex) / 2;
+      // Place between neighbors
+      const prevVal = prevOrder ?? 0;
+      const nextVal = nextOrder ?? prevVal + 1;
+      newOrderIndex = (prevVal + nextVal) / 2;
     }
-    newOrderIndex = Math.max(0, newOrderIndex);
 
+    console.log('[DragDrop] reordering within category', {
+      draggedId: draggedItemId,
+      targetId: targetItemId,
+      draggedIndex,
+      targetIndex,
+      prevOrder,
+      nextOrder,
+      newOrderIndex,
+      currentDraggedOrderIndex: draggedItem.orderIndex
+    });
+
+    console.log('[DragDrop] updating with new order index:', { draggedItemId, newOrderIndex });
     await updateItem(draggedItemId, { orderIndex: newOrderIndex });
   }, [items, updateItem]);
 
@@ -190,6 +238,27 @@ export default function App() {
     if (isEditMode) {
       const draggedItemId = e.dataTransfer.getData('text/plain');
       if (draggedItemId) {
+        const draggedItem = items.find(i => String(i.id) === String(draggedItemId));
+        if (!draggedItem) {
+          console.warn('[CategoryDrop] Dragged item not found', draggedItemId);
+          return;
+        }
+
+        const fromCategory = draggedItem.category || '';
+        if (fromCategory === category) {
+          console.log('[CategoryDrop] Ignoring drop within same category', {
+            draggedItemId,
+            category
+          });
+          return;
+        }
+
+        console.log('[CategoryDrop] Moving item between categories', {
+          draggedItemId,
+          from: fromCategory,
+          to: category
+        });
+
         updateItem(draggedItemId, {
           category: category,
           categoryIcon: categoryData.icon,
@@ -197,7 +266,7 @@ export default function App() {
         });
       }
     }
-  }, [isEditMode, updateItem]);
+  }, [isEditMode, items, updateItem]);
 
   const handleCategoryDragOver = useCallback((e) => {
     if (isEditMode && e.dataTransfer.types.includes('text/plain')) {

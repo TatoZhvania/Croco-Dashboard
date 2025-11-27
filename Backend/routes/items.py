@@ -79,6 +79,13 @@ def update_item(item_id):
 
     try:
         cursor = conn.cursor()
+
+        # Ensure the item exists before attempting an update. MySQL returns
+        # rowcount 0 when values are unchanged, which was incorrectly treated
+        # as "not found" during reordering.
+        cursor.execute("SELECT 1 FROM dashboard_items WHERE id = %s", (item_id,))
+        if cursor.fetchone() is None:
+            return jsonify({"error": "Item not found"}), 404
         
         set_clauses = []
         values = []
@@ -110,9 +117,7 @@ def update_item(item_id):
         cursor.execute(query, tuple(values))
         conn.commit()
 
-        if cursor.rowcount == 0:
-            return jsonify({"error": "Item not found"}), 404
-
+        # cursor.rowcount can be 0 when the new values equal the existing ones.
         return jsonify({"message": "Item updated successfully"}), 200
     
     except Exception as e:
