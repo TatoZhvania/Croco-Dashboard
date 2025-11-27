@@ -5,9 +5,9 @@ export const Footer = ({
     toggleTheme 
 }) => {
     return (
-        <footer className="fixed bottom-0 left-0 right-0 z-50">
-            <div className="px-2 sm:px-4 pb-2">
-                <div className="flex items-center justify-between max-w-9xl mx-auto rounded-xl bg-gray-100/70 backdrop-blur dark:bg-gray-800/70 shadow-lg p-3">
+        <footer className="sticky bottom-0 left-0 right-0 z-40">
+            <div className="px-0 sm:px-0 pb-2">
+                <div className="flex items-center justify-between w-full rounded-xl bg-gray-100/70 backdrop-blur dark:bg-gray-800/70 shadow-lg p-3">
                     {/* Left Section: Author */}
                     <div className="text-left">
                         <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">
