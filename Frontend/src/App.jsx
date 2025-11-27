@@ -11,6 +11,7 @@ import { CategorySection } from './components/dashboard/CategorySection.jsx';
 import { EmptyState } from './components/dashboard/EmptyState.jsx';
 import { ItemFormModal } from './components/modals/ItemFormModal.jsx';
 import { ConfirmationModal } from './components/modals/ConfirmationModal.jsx';
+import { CategoryEditModal } from './components/modals/CategoryEditModal.jsx';
 
 export default function App() {
   const [theme, toggleTheme] = useDarkMode();
@@ -33,6 +34,7 @@ export default function App() {
   const [categoryToDelete, setCategoryToDelete] = useState(null);
   const [collapsedCategories, setCollapsedCategories] = useState({});
   const [isEditMode, setIsEditMode] = useState(false);
+  const [editingCategory, setEditingCategory] = useState(null); // { name, icon }
 
   // Event Handlers
   const toggleCollapse = useCallback((category) => {
@@ -64,9 +66,84 @@ export default function App() {
     setIsEditMode(prev => !prev);
   }, []);
 
+  // Category edit handlers: rename and change icon
+  const handleRenameCategory = useCallback(async (oldName, newName) => {
+    // Move collapse state to the new key if present
+    setCollapsedCategories(prev => {
+      if (prev.hasOwnProperty(oldName)) {
+        const { [oldName]: oldVal, ...rest } = prev;
+        return { ...rest, [newName]: oldVal };
+      }
+      return prev;
+    });
+
+    const affectedItems = items.filter(i => {
+      const cat = i.category || 'Uncategorized';
+      return cat === oldName;
+    });
+
+    for (const it of affectedItems) {
+      await updateItem(it.id, { category: newName });
+    }
+  }, [items, updateItem]);
+
+  const handleChangeCategoryIcon = useCallback(async (categoryName, newIcon) => {
+    const affectedItems = items.filter(i => {
+      const cat = i.category || 'Uncategorized';
+      return cat === categoryName;
+    });
+
+    for (const it of affectedItems) {
+      await updateItem(it.id, { categoryIcon: newIcon });
+    }
+  }, [items, updateItem]);
+
   const handleAddNew = useCallback(() => {
     setShowAddModal(true);
   }, []);
+
+  // Open category edit modal
+  const handleOpenEditCategory = useCallback((name, icon) => {
+    setEditingCategory({ name, icon });
+  }, []);
+
+  // Save category edits (rename and/or icon change)
+  const handleSaveCategoryEdits = useCallback(async ({ name, icon }) => {
+    if (!editingCategory) return;
+    const oldName = editingCategory.name;
+
+    // If name changed, rename category
+    if (name && name !== oldName) {
+      await (async () => {
+        // Move collapse state
+        setCollapsedCategories(prev => {
+          if (prev.hasOwnProperty(oldName)) {
+            const { [oldName]: oldVal, ...rest } = prev;
+            return { ...rest, [name]: oldVal };
+          }
+          return prev;
+        });
+
+        const affected = items.filter(i => (i.category || 'Uncategorized') === oldName);
+        for (const it of affected) {
+          await updateItem(it.id, { category: name });
+        }
+      })();
+    }
+
+    // If icon changed, update icon for all items in category (use new name if renamed)
+    const targetName = name || oldName;
+    const affectedForIcon = items.filter(i => (i.category || 'Uncategorized') === targetName);
+    const desiredIcon = icon && icon.trim() ? icon.trim() : 'Folder';
+    const iconNeedsUpdate = editingCategory.icon !== desiredIcon || name !== oldName; // update after rename to apply to moved items
+    if (iconNeedsUpdate) {
+      for (const it of affectedForIcon) {
+        await updateItem(it.id, { categoryIcon: desiredIcon });
+      }
+    }
+
+    setEditingCategory(null);
+  }, [editingCategory, items, updateItem, setCollapsedCategories]);
 
   // Drag and Drop Logic
   const handleDropItem = useCallback(async (draggedItemId, targetItemId, targetCategory) => {
@@ -229,6 +306,7 @@ export default function App() {
                 onCategoryDrop={(e) => handleCategoryDrop(e, category, groupedData[category])}
                 onCategoryDragOver={handleCategoryDragOver}
                 onCategoryDragLeave={handleCategoryDragLeave}
+                onOpenEditCategory={handleOpenEditCategory}
               />
             ))}
           </div>
@@ -271,6 +349,16 @@ export default function App() {
       )}
 
       
+    {editingCategory && (
+        <CategoryEditModal
+          isOpen={!!editingCategory}
+          initialName={editingCategory.name}
+          initialIcon={editingCategory.icon}
+          onClose={() => setEditingCategory(null)}
+          onSave={handleSaveCategoryEdits}
+        />
+      )}
+
     </div>
   );
 }

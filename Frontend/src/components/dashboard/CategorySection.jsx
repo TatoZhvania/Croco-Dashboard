@@ -3,7 +3,8 @@ import { IconComponent } from '../../utils/icons.jsx';
 import { DashboardItem } from './DashboardItem.jsx';
 
 // We'll use react-icons for the collapse and trash icons too
-import { FaChevronRight, FaChevronDown, FaTrash } from 'react-icons/fa';
+import { FaPencilAlt } from "react-icons/fa";
+import { FaChevronRight, FaChevronDown, FaTrash, } from 'react-icons/fa';
 
 export const CategorySection = ({ 
     category, 
@@ -17,7 +18,8 @@ export const CategorySection = ({
     onDropItem,
     onCategoryDrop,
     onCategoryDragOver,
-    onCategoryDragLeave
+    onCategoryDragLeave,
+    onOpenEditCategory
 }) => {
     const CollapseIcon = isCollapsed ? FaChevronRight : FaChevronDown;
 
@@ -52,14 +54,24 @@ export const CategorySection = ({
                     </span>
                 </button>
                 
-                {/* Category Delete Button */}
-                <button
-                    onClick={() => onDeleteCategory(category, categoryData.items)}
-                    className="p-1 rounded-full text-red-500 hover:bg-red-500 hover:text-white transition duration-200"
-                    title={`Delete all ${categoryData.items.length} items in category: ${category}`}
-                >
-                    <FaTrash size={16} />
-                </button>
+                {/* Category Actions */}
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => onOpenEditCategory && onOpenEditCategory(category, categoryData.icon)}
+                        className="p-1 rounded-full text-indigo-700 hover:bg-indigo-200/60 dark:text-indigo-200 dark:hover:bg-indigo-700/40 transition duration-200"
+                        title={`Edit category ${category}`}
+                    >
+                        <FaPencilAlt size={14} />
+                    </button>
+                    {/* Category Delete Button */}
+                    <button
+                        onClick={() => onDeleteCategory(category, categoryData.items)}
+                        className="p-1 rounded-full text-red-500 hover:bg-red-500 hover:text-white transition duration-200"
+                        title={`Delete all ${categoryData.items.length} items in category: ${category}`}
+                    >
+                        <FaTrash size={16} />
+                    </button>
+                </div>
             </div>
 
             {/* Collapsible Content */}

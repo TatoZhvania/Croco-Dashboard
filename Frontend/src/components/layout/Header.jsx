@@ -2,7 +2,7 @@ import React from 'react';
 import { ThemeToggle } from '../common/ThemeToggle.jsx';
 import { FaHome } from "react-icons/fa";
 import { FaSearch } from "react-icons/fa";
-import { FaPencil } from "react-icons/fa6";
+import { FiMove } from "react-icons/fi";
 import { FaPlus } from "react-icons/fa";
 import { IoMove } from "react-icons/io5";
 
@@ -60,7 +60,7 @@ export const Header = ({
                         } border border-gray-200 dark:border-gray-700 transform hover:scale-105`}
                         title={isEditMode ? 'Exit Edit Mode' : 'Enter Edit Mode (Reorder Links)'}
                     >
-                        <FaPencil size={20} />
+                        <FiMove size={20} />
                     </button>
 
                     {/* Add Button */}
