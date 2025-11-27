@@ -118,7 +118,7 @@ export const ItemFormModal = ({ onClose, itemToEdit, onSave, onUpdate, existingC
                                 onChange={handleCategoryChange}
                                 className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white p-2.5 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                             >
-                                <option value="CREATE_NEW">-- Create New Category --</option>
+                                <option value="CREATE_NEW">-- Create Category or Choose --</option>
                                 {existingCategories.map((cat) => (
                                     <option key={cat.name} value={cat.name} className="flex items-center">
                                         {cat.name}
@@ -178,13 +178,13 @@ export const ItemFormModal = ({ onClose, itemToEdit, onSave, onUpdate, existingC
                         
                         <label className="block">
                             <span className="text-gray-700 dark:text-gray-300 font-medium">Username (Optional)</span>
-                            <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="e.g., myGitHubHandle"
+                            <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="e.g., admin"
                                 className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white p-2.5 shadow-sm focus:ring-indigo-500 focus:border-indigo-500" />
                         </label>
 
                         <label className="block">
-                            <span className="text-gray-700 dark:text-gray-300 font-medium">Secret Key / Hint (Optional)</span>
-                            <input type="password" value={secretKey} onChange={(e) => setSecretKey(e.target.value)} placeholder="e.g., last 4 digits of token or a hint"
+                            <span className="text-gray-700 dark:text-gray-300 font-medium">Password (Optional)</span>
+                            <input type="password" value={secretKey} onChange={(e) => setSecretKey(e.target.value)} placeholder="e.g., admin123"
                                 className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white p-2.5 shadow-sm focus:ring-indigo-500 focus:border-indigo-500" />
                         </label>
                     </div>
