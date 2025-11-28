@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ThemeToggle } from '../common/ThemeToggle.jsx';
 import { FaHome } from "react-icons/fa";
 import { FaSearch } from "react-icons/fa";
@@ -27,6 +27,7 @@ export const Header = ({
     onLogoutRequest
 }) => {
     const [menuOpen, setMenuOpen] = useState(false);
+    const menuRef = useRef(null);
 
     const handleMenuAction = (action) => {
         if (action === 'export') onExport();
@@ -34,6 +35,20 @@ export const Header = ({
         if (action === 'logout') onLogoutRequest();
         setMenuOpen(false);
     };
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (menuRef.current && !menuRef.current.contains(event.target)) {
+                setMenuOpen(false);
+            }
+        };
+        if (menuOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [menuOpen]);
 
     return (
         <header className="mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
@@ -83,7 +98,7 @@ export const Header = ({
                                 <FiMove size={20} />
                             </button>
 
-                            <div className="relative">
+                            <div className="relative" ref={menuRef}>
                                 <button
                                     onClick={() => setMenuOpen((open) => !open)}
                                     className="p-4 rounded-full bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-200 shadow-sm flex items-center"
