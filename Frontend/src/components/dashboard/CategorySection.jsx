@@ -78,8 +78,10 @@ export const CategorySection = ({
                 )}
             </div>
 
-            {/* Collapsible Content */}
-            <div className={`${isCollapsed ? 'hidden' : 'block'} transition-all duration-300 overflow-hidden`}>
+            {/* Collapsible Content with smooth height/opacity transition */}
+            <div
+                className={`transition-all duration-500 overflow-hidden ${isCollapsed ? 'max-h-0 opacity-0' : 'max-h-[2000px] opacity-100'}`}
+            >
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-2">
                     {categoryData.items.map(item => (
                         <DashboardItem

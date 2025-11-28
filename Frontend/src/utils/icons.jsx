@@ -29,7 +29,7 @@ export const normalizeIconName = (name) => {
         'jenkins': 'Jenkins',
         'docker': 'Docker',
         'gitlab': 'Gitlab',
-        'github': 'GitHub',
+        'github': 'Github',
         'bitcoin': 'Bitcoin',
         'ethereum': 'Ethereum',
         
@@ -54,7 +54,7 @@ export const normalizeIconName = (name) => {
         'php': 'Php',
         'ruby': 'Ruby',
         'c++': 'Cplusplus',
-        'c#': 'Csharp',
+        'c#': 'CSharp',
     };
     
     const lowerName = nameStr.toLowerCase();
