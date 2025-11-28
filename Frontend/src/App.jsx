@@ -464,7 +464,7 @@ export default function App() {
   if (showFatalError) return <ErrorDisplay error={error} onRetry={fetchData} />;
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 p-4 sm:p-8 pb-6 sm:pb-8 font-sans transition-colors duration-300">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 p-4 sm:p-8 pb-6 sm:pb-8 font-sans transition-colors duration-300">
       {/* Header: ThemeToggle removed */}
       <Header
         theme={theme}

@@ -51,13 +51,13 @@ export const Header = ({
     }, [menuOpen]);
 
     return (
-        <header className="mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
-            <div className="flex flex-col lg:flex-row justify-between items-center mb-4 space-y-4 lg:space-y-0">
+        <header className="mb-6 pb-4 px-4 sm:px-6 lg:px-4 border-b border-gray-300/70 dark:border-gray-700 bg-gradient-to-r from-gray-50 via-gray-100 to-white dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 rounded-2xl shadow-sm">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-center">
                 
                 {/* Left Section: Title and Status */}
-                <div className="w-full lg:w-1/4 mb-4 lg:mb-0 text-center lg:text-left">
-                    <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white flex items-center justify-center lg:justify-start">
-                        <FaHome className="w-8 h-8 mr-2 text-indigo-500" />
+                <div className="text-center lg:text-left">
+                    <h1 className="text-2xl font-extrabold text-gray-800 dark:text-white flex items-center justify-center lg:justify-start">
+                        <FaHome className="w-8 h-8 mr-2 text-indigo-600" />
                         DevOps Dashboard
                     </h1>
                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -66,19 +66,19 @@ export const Header = ({
                 </div>
 
                 {/* Middle Section: Search Bar */}
-                <div className="relative w-full max-w-2xl lg:w-1/2">
+                <div className="relative w-full">
                     <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
                     <input
                         type="text"
                         placeholder="Search links by name, category or URL..."
                         value={searchTerm}
                         onChange={(e) => onSearchChange(e.target.value)}
-                        className="w-full py-2.5 pl-10 pr-4 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-indigo-500 focus:border-indigo-500 shadow-inner transition duration-200"
+                        className="w-full py-2.5 pl-10 pr-4 rounded-xl border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-indigo-500 focus:border-indigo-500 shadow-inner transition duration-200"
                     />
                 </div>
 
                 {/* Right Section: Controls */}
-                <div className="w-full lg:w-1/4 flex justify-center lg:justify-end space-x-3 flex-wrap">
+                <div className="flex justify-center lg:justify-end items-center space-x-3">
                     
                     {/* Theme Toggle Button */}
                     <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
@@ -90,8 +90,8 @@ export const Header = ({
                                 disabled={!canManage}
                                 className={`p-4 rounded-full transition-all duration-300 shadow-lg ${
                                     isEditMode
-                                        ? 'bg-yellow-500 text-gray-900 hover:bg-yellow-600'
-                                        : 'bg-white dark:bg-gray-800 text-yellow-500 hover:bg-gray-100 dark:hover:bg-gray-700'
+                                        ? 'bg-amber-400 text-gray-900 hover:bg-amber-500'
+                                        : 'bg-white dark:bg-gray-800 text-amber-500 hover:bg-gray-100 dark:hover:bg-gray-700'
                                 } border border-gray-200 dark:border-gray-700 transform hover:scale-105 disabled:opacity-60`}
                                 title={isEditMode ? 'Exit Edit Mode' : 'Enter Edit Mode (Reorder Links)'}
                             >
@@ -101,7 +101,7 @@ export const Header = ({
                             <div className="relative" ref={menuRef}>
                                 <button
                                     onClick={() => setMenuOpen((open) => !open)}
-                                    className="p-4 rounded-full bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-200 shadow-sm flex items-center"
+                                    className="p-4 rounded-full bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-200 shadow-md flex items-center"
                                     title="Admin menu"
                                 >
                                     <FiMenu size={22} />
