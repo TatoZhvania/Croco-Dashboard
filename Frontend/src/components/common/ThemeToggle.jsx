@@ -8,7 +8,7 @@ export const ThemeToggle = ({ theme, toggleTheme }) => {
     return (
         <button
             onClick={toggleTheme}
-            className={`p-3 rounded-full transition-all duration-300 shadow-lg ${
+            className={`p-4 rounded-full transition-all duration-300 shadow-lg ${
                 isDark 
                     ? 'bg-gray-800 text-yellow-300 hover:bg-gray-700'
                     : 'bg-white text-indigo-600 hover:bg-gray-100'

@@ -155,3 +155,102 @@ def delete_item(item_id):
         if conn.is_connected():
             cursor.close()
             conn.close()
+
+
+@require_admin
+def export_items():
+    """Export all items (admin only) in a transport-friendly payload."""
+    conn = get_db_connection()
+    if conn is None:
+        return jsonify({"error": "Database connection failed"}), 500
+
+    try:
+        cursor = conn.cursor(dictionary=True)
+        query = "SELECT * FROM dashboard_items ORDER BY category, order_index"
+        cursor.execute(query)
+        items = cursor.fetchall()
+        return jsonify({"items": items}), 200
+    except Exception as e:
+        print(f"Error exporting items: {e}")
+        return jsonify({"error": str(e)}), 500
+    finally:
+        if conn.is_connected():
+            cursor.close()
+            conn.close()
+
+
+@require_admin
+def import_items():
+    """Import a list of items. Optionally replace all existing items first."""
+    payload = request.get_json(silent=True) or {}
+    incoming_items = payload.get("items") or payload.get("data")
+    replace_existing = bool(payload.get("replaceExisting", False))
+
+    if not isinstance(incoming_items, list) or len(incoming_items) == 0:
+        return jsonify({"error": "Payload must include a non-empty 'items' array"}), 400
+
+    conn = get_db_connection()
+    if conn is None:
+        return jsonify({"error": "Database connection failed"}), 500
+
+    try:
+        cursor = conn.cursor()
+        if replace_existing:
+            cursor.execute("DELETE FROM dashboard_items")
+            conn.commit()
+
+        insert_query = """
+            INSERT INTO dashboard_items
+            (id, name, url, description, icon, category, category_icon, username, secret_key, order_index)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            ON DUPLICATE KEY UPDATE
+                name = VALUES(name),
+                url = VALUES(url),
+                description = VALUES(description),
+                icon = VALUES(icon),
+                category = VALUES(category),
+                category_icon = VALUES(category_icon),
+                username = VALUES(username),
+                secret_key = VALUES(secret_key),
+                order_index = VALUES(order_index)
+        """
+
+        for idx, item in enumerate(incoming_items):
+            if not isinstance(item, dict):
+                continue
+
+            item_id = item.get("id") or str(uuid.uuid4())
+            name = item.get("name") or "Untitled"
+            url = item.get("url") or ""
+            description = item.get("description") or ""
+            icon = item.get("icon") or "Link"
+            category = item.get("category") or "Uncategorized"
+            category_icon = item.get("category_icon") or item.get("categoryIcon") or "Folder"
+            username = item.get("username") or ""
+            secret_key = item.get("secret_key") or item.get("secretKey") or ""
+            order_index = item.get("order_index")
+            if order_index is None:
+                order_index = float(idx)
+
+            cursor.execute(insert_query, (
+                item_id,
+                name,
+                url,
+                description,
+                icon,
+                category,
+                category_icon,
+                username,
+                secret_key,
+                order_index
+            ))
+
+        conn.commit()
+        return jsonify({"message": "Import completed", "count": len(incoming_items)}), 200
+    except Exception as e:
+        print(f"Error importing items: {e}")
+        return jsonify({"error": str(e)}), 500
+    finally:
+        if conn.is_connected():
+            cursor.close()
+            conn.close()

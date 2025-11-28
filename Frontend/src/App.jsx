@@ -16,6 +16,8 @@ import { CategoryEditModal } from './components/modals/CategoryEditModal.jsx';
 import { AuthModal } from './components/modals/AuthModal.jsx';
 import { LogoutConfirmationModal } from './components/modals/LogoutConfirmationModal.jsx';
 import { MoveConfirmationModal } from './components/modals/MoveConfirmationModal.jsx';
+import { ImportModal } from './components/modals/ImportModal.jsx';
+import { downloadJson } from './utils/exporter.js';
 
 export default function App() {
   const [theme, toggleTheme] = useDarkMode();
@@ -28,7 +30,9 @@ export default function App() {
     updateItem,
     deleteItem,
     deleteAllItemsInCategory,
-    fetchData
+    fetchData,
+    importItems,
+    exportItems
   } = useApiDashboardItems(token);
 
   // UI State
@@ -43,6 +47,8 @@ export default function App() {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [pendingMove, setPendingMove] = useState(null); // { itemId, fromCategory, toCategory, updates }
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
 
   // Keep edit-only UI closed for guest users
   useEffect(() => {
@@ -360,6 +366,35 @@ export default function App() {
     setShowLogoutConfirm(false);
   }, [handleLogout]);
 
+  const handleExport = useCallback(async () => {
+    if (!canManage) {
+      openLoginModal();
+      return;
+    }
+    const serverData = await exportItems();
+    const exportPayload = serverData?.items ? serverData : { items };
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    downloadJson(exportPayload, `dashboard-export-${timestamp}.json`);
+  }, [canManage, exportItems, items, openLoginModal]);
+
+  const handleOpenImportModal = useCallback(() => {
+    if (!canManage) {
+      openLoginModal();
+      return;
+    }
+    setShowImportModal(true);
+  }, [canManage, openLoginModal]);
+
+  const handleImport = useCallback(async (itemsToImport, replaceExisting) => {
+    if (!canManage) return;
+    setIsImporting(true);
+    const success = await importItems(itemsToImport, replaceExisting);
+    setIsImporting(false);
+    if (success) {
+      setShowImportModal(false);
+    }
+  }, [canManage, importItems]);
+
   const handleConfirmMove = useCallback(async () => {
     if (!pendingMove) return;
     await updateItem(pendingMove.itemId, pendingMove.updates);
@@ -445,6 +480,8 @@ export default function App() {
         canManage={canManage}
         onToggleEditMode={handleToggleEditMode}
         onAddNew={handleAddNew}
+        onExport={handleExport}
+        onImport={handleOpenImportModal}
       />
 
       {error && items.length > 0 && (
@@ -548,6 +585,14 @@ export default function App() {
         toCategory={pendingMove?.toCategory}
         onConfirm={handleConfirmMove}
         onCancel={() => setPendingMove(null)}
+      />
+
+      <ImportModal
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        onImport={handleImport}
+        isLoading={isImporting}
+        error={error}
       />
 
     </div>

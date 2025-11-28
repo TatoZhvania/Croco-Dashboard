@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { API_BASE_URL } from '../config/api.jsx';
+import { API_BASE_URL, API_IMPORT_URL, API_EXPORT_URL } from '../config/api.jsx';
 
 export const useApiDashboardItems = (authToken = '') => {
     const [items, setItems] = useState([]);
@@ -130,6 +130,39 @@ export const useApiDashboardItems = (authToken = '') => {
             setError(message);
         }
     }, [items, fetchData, mutationHeaders]);
+
+    const importItems = useCallback(async (itemsPayload, replaceExisting = false) => {
+        try {
+            await axios.post(API_IMPORT_URL, { items: itemsPayload, replaceExisting }, {
+                headers: mutationHeaders()
+            });
+            fetchData();
+            return true;
+        } catch (err) {
+            console.error("Error importing items:", err);
+            const message = err?.response?.status === 401
+                ? "Admin access required to import items."
+                : "Could not import items. Check JSON and API connection.";
+            setError(message);
+            return false;
+        }
+    }, [fetchData, mutationHeaders]);
+
+    const exportItems = useCallback(async () => {
+        try {
+            const response = await axios.get(API_EXPORT_URL, {
+                headers: authHeaders()
+            });
+            return response.data;
+        } catch (err) {
+            console.error("Error exporting items:", err);
+            const message = err?.response?.status === 401
+                ? "Admin access required to export items."
+                : "Could not export items. API connection issue.";
+            setError(message);
+            return null;
+        }
+    }, [authHeaders, setError]);
     
     return { 
         items, 
@@ -139,6 +172,8 @@ export const useApiDashboardItems = (authToken = '') => {
         updateItem, 
         deleteItem, 
         deleteAllItemsInCategory,
-        fetchData 
+        fetchData,
+        importItems,
+        exportItems
     };
 };

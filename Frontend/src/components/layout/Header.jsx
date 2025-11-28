@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ThemeToggle } from '../common/ThemeToggle.jsx';
 import { FaHome } from "react-icons/fa";
 import { FaSearch } from "react-icons/fa";
-import { FiMove } from "react-icons/fi";
+import { FiMove, FiDownload, FiUpload, FiMenu } from "react-icons/fi";
 import { FaPlus } from "react-icons/fa";
 import { IoMove } from "react-icons/io5";
 import { FaSignInAlt, FaSignOutAlt } from "react-icons/fa";
@@ -21,9 +21,20 @@ export const Header = ({
     isEditMode,
     onToggleEditMode,
     onAddNew,
+    onExport,
+    onImport,
     onLoginRequest,
     onLogoutRequest
 }) => {
+    const [menuOpen, setMenuOpen] = useState(false);
+
+    const handleMenuAction = (action) => {
+        if (action === 'export') onExport();
+        if (action === 'import') onImport();
+        if (action === 'logout') onLogoutRequest();
+        setMenuOpen(false);
+    };
+
     return (
         <header className="mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
             <div className="flex flex-col lg:flex-row justify-between items-center mb-4 space-y-4 lg:space-y-0">
@@ -47,7 +58,7 @@ export const Header = ({
                         placeholder="Search links by name, category or URL..."
                         value={searchTerm}
                         onChange={(e) => onSearchChange(e.target.value)}
-                        className="w-full py-3 pl-10 pr-4 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-indigo-500 focus:border-indigo-500 shadow-inner transition duration-200"
+                        className="w-full py-2.5 pl-10 pr-4 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-indigo-500 focus:border-indigo-500 shadow-inner transition duration-200"
                     />
                 </div>
 
@@ -62,7 +73,7 @@ export const Header = ({
                             <button
                                 onClick={onToggleEditMode}
                                 disabled={!canManage}
-                                className={`p-3 rounded-full transition-all duration-300 shadow-lg ${
+                                className={`p-4 rounded-full transition-all duration-300 shadow-lg ${
                                     isEditMode
                                         ? 'bg-yellow-500 text-gray-900 hover:bg-yellow-600'
                                         : 'bg-white dark:bg-gray-800 text-yellow-500 hover:bg-gray-100 dark:hover:bg-gray-700'
@@ -72,21 +83,51 @@ export const Header = ({
                                 <FiMove size={20} />
                             </button>
 
-                            <button
-                                onClick={onAddNew}
-                                className="px-4 py-3 bg-indigo-600 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/50 hover:bg-indigo-700 transition duration-300 transform hover:scale-[1.02] flex items-center group min-w-[150px]"
-                            >
-                                <FaPlus size={20} className="mr-2 group-hover:rotate-90 transition duration-300" />
-                                Add New Link
-                            </button>
+                            <div className="relative">
+                                <button
+                                    onClick={() => setMenuOpen((open) => !open)}
+                                    className="p-4 rounded-full bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-200 shadow-sm flex items-center"
+                                    title="Admin menu"
+                                >
+                                    <FiMenu size={22} />
+                                </button>
 
-                            <button
-                                onClick={onLogoutRequest}
-                                className="px-4 py-3 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 font-semibold rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 transition duration-200 flex items-center space-x-2"
-                            >
-                                <FaSignOutAlt />
-                                <span>Sign out</span>
-                            </button>
+                                {menuOpen && (
+                                    <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg overflow-hidden z-20">
+                                        <button
+                                            onClick={() => {
+                                                onAddNew();
+                                                setMenuOpen(false);
+                                            }}
+                                            className="w-full px-5 py-3 text-left text-base font-semibold flex items-center gap-3 hover:bg-indigo-50 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-100"
+                                        >
+                                            <FaPlus size={18} />
+                                            <span className="text-indigo-400 dark:text-indigo-200">Add new link</span>
+                                        </button>
+                                        <button
+                                            onClick={() => handleMenuAction('export')}
+                                            className="w-full px-5 py-3 text-left text-base flex items-center gap-3 hover:bg-indigo-50 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-100"
+                                        >
+                                            <FiDownload size={18} />
+                                            <span className="font-medium">Export dashboard</span>
+                                        </button>
+                                        <button
+                                            onClick={() => handleMenuAction('import')}
+                                            className="w-full px-5 py-3 text-left text-base flex items-center gap-3 hover:bg-indigo-50 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-100"
+                                        >
+                                            <FiUpload size={18} />
+                                            <span className="font-medium">Import dashboard</span>
+                                        </button>
+                                        <button
+                                            onClick={() => handleMenuAction('logout')}
+                                            className="w-full px-5 py-3 text-left text-base flex items-center gap-3 hover:bg-red-50 dark:hover:bg-gray-700 text-red-600 dark:text-red-300"
+                                        >
+                                            <FaSignOutAlt size={18} />
+                                            <span className="font-semibold">Sign out</span>
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
                         </>
                     ) : (
                         <button
