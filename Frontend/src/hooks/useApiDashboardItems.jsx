@@ -2,10 +2,16 @@ import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { API_BASE_URL } from '../config/api.jsx';
 
-export const useApiDashboardItems = () => {
+export const useApiDashboardItems = (authToken = '') => {
     const [items, setItems] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
+
+    const authHeaders = useCallback(() => (
+        authToken
+            ? { Authorization: `Bearer ${authToken}` }
+            : {}
+    ), [authToken]);
 
     const fetchData = useCallback(async () => {
         setIsLoading(true);
@@ -44,41 +50,57 @@ export const useApiDashboardItems = () => {
         fetchData();
     }, [fetchData]);
 
+    const mutationHeaders = useCallback(() => ({
+        'Content-Type': 'application/json',
+        ...authHeaders()
+    }), [authHeaders]);
+
     const addItem = useCallback(async (newItemData) => {
         try {
             await axios.post(API_BASE_URL, newItemData, {
-                headers: { 'Content-Type': 'application/json' }
+                headers: mutationHeaders()
             });
             fetchData();
         } catch (err) {
             console.error("Error adding item:", err);
-            setError("Could not add item. API connection issue.");
+            const message = err?.response?.status === 401
+                ? "Admin access required to add items."
+                : "Could not add item. API connection issue.";
+            setError(message);
         }
-    }, [fetchData]);
+    }, [fetchData, mutationHeaders]);
 
     const updateItem = useCallback(async (itemId, updatedData) => {
         try {
             console.log('[API] Updating item', { itemId, updatedData });
             await axios.put(`${API_BASE_URL}/${itemId}`, updatedData, {
-                headers: { 'Content-Type': 'application/json' }
+                headers: mutationHeaders()
             });
             console.log('[API] Update success', { itemId });
             fetchData();
         } catch (err) {
             console.error("Error updating item:", err);
-            setError("Could not update item. API connection issue.");
+            const message = err?.response?.status === 401
+                ? "Admin access required to update items."
+                : "Could not update item. API connection issue.";
+            setError(message);
         }
-    }, [fetchData]);
+    }, [fetchData, mutationHeaders]);
 
     const deleteItem = useCallback(async (itemId) => {
         try {
-            await axios.delete(`${API_BASE_URL}/${itemId}`);
+            await axios.delete(`${API_BASE_URL}/${itemId}`, {
+                headers: mutationHeaders()
+            });
             fetchData();
         } catch (err) {
             console.error("Error deleting item:", err);
-            setError("Could not delete item. API connection issue.");
+            const message = err?.response?.status === 401
+                ? "Admin access required to delete items."
+                : "Could not delete item. API connection issue.";
+            setError(message);
         }
-    }, [fetchData]);
+    }, [fetchData, mutationHeaders]);
 
     const deleteAllItemsInCategory = useCallback(async (categoryName) => {
         const itemsToDelete = items.filter(item => item.category === categoryName);
@@ -86,7 +108,9 @@ export const useApiDashboardItems = () => {
 
         try {
             const deletePromises = itemsToDelete.map(item => 
-                axios.delete(`${API_BASE_URL}/${item.id}`)
+                axios.delete(`${API_BASE_URL}/${item.id}`, {
+                    headers: mutationHeaders()
+                })
             );
 
             const results = await Promise.allSettled(deletePromises);
@@ -100,9 +124,12 @@ export const useApiDashboardItems = () => {
             fetchData();
         } catch (err) {
             console.error(`Error deleting category ${categoryName}:`, err);
-            setError("Could not delete category items. API connection issue.");
+            const message = err?.response?.status === 401
+                ? "Admin access required to delete categories."
+                : "Could not delete category items. API connection issue.";
+            setError(message);
         }
-    }, [items, fetchData]);
+    }, [items, fetchData, mutationHeaders]);
     
     return { 
         items, 

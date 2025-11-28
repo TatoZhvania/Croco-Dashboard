@@ -5,6 +5,8 @@ import { FaSearch } from "react-icons/fa";
 import { FiMove } from "react-icons/fi";
 import { FaPlus } from "react-icons/fa";
 import { IoMove } from "react-icons/io5";
+import { FaSignInAlt, FaSignOutAlt } from "react-icons/fa";
+import { RiLoader2Fill } from "react-icons/ri";
 
 
 export const Header = ({ 
@@ -13,9 +15,14 @@ export const Header = ({
     items,
     searchTerm,
     onSearchChange,
+    isAdmin,
+    canManage,
+    isAuthenticating,
     isEditMode,
     onToggleEditMode,
-    onAddNew
+    onAddNew,
+    onLoginRequest,
+    onLogoutRequest
 }) => {
     return (
         <header className="mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
@@ -45,32 +52,61 @@ export const Header = ({
                 </div>
 
                 {/* Right Section: Controls */}
-                <div className="w-full lg:w-1/4 flex justify-center lg:justify-end space-x-3">
+                <div className="w-full lg:w-1/4 flex justify-center lg:justify-end space-x-3 flex-wrap">
                     
                     {/* Theme Toggle Button */}
                     <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
-                    
-                    {/* Edit Mode Toggle Button */}
-                    <button
-                        onClick={onToggleEditMode}
-                        className={`p-3 rounded-full transition-all duration-300 shadow-lg ${
-                            isEditMode
-                                ? 'bg-yellow-500 text-gray-900 hover:bg-yellow-600'
-                                : 'bg-white dark:bg-gray-800 text-yellow-500 hover:bg-gray-100 dark:hover:bg-gray-700'
-                        } border border-gray-200 dark:border-gray-700 transform hover:scale-105`}
-                        title={isEditMode ? 'Exit Edit Mode' : 'Enter Edit Mode (Reorder Links)'}
-                    >
-                        <FiMove size={20} />
-                    </button>
 
-                    {/* Add Button */}
-                    <button
-                        onClick={onAddNew}
-                        className="px-4 py-3 bg-indigo-600 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/50 hover:bg-indigo-700 transition duration-300 transform hover:scale-[1.02] flex items-center group min-w-[150px]"
-                    >
-                        <FaPlus size={20} className="mr-2 group-hover:rotate-90 transition duration-300" />
-                        Add New Link
-                    </button>
+                    {isAdmin ? (
+                        <>
+                            <button
+                                onClick={onToggleEditMode}
+                                disabled={!canManage}
+                                className={`p-3 rounded-full transition-all duration-300 shadow-lg ${
+                                    isEditMode
+                                        ? 'bg-yellow-500 text-gray-900 hover:bg-yellow-600'
+                                        : 'bg-white dark:bg-gray-800 text-yellow-500 hover:bg-gray-100 dark:hover:bg-gray-700'
+                                } border border-gray-200 dark:border-gray-700 transform hover:scale-105 disabled:opacity-60`}
+                                title={isEditMode ? 'Exit Edit Mode' : 'Enter Edit Mode (Reorder Links)'}
+                            >
+                                <FiMove size={20} />
+                            </button>
+
+                            <button
+                                onClick={onAddNew}
+                                className="px-4 py-3 bg-indigo-600 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/50 hover:bg-indigo-700 transition duration-300 transform hover:scale-[1.02] flex items-center group min-w-[150px]"
+                            >
+                                <FaPlus size={20} className="mr-2 group-hover:rotate-90 transition duration-300" />
+                                Add New Link
+                            </button>
+
+                            <button
+                                onClick={onLogoutRequest}
+                                className="px-4 py-3 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 font-semibold rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 transition duration-200 flex items-center space-x-2"
+                            >
+                                <FaSignOutAlt />
+                                <span>Sign out</span>
+                            </button>
+                        </>
+                    ) : (
+                        <button
+                            onClick={onLoginRequest}
+                            disabled={isAuthenticating}
+                            className="px-4 py-3 bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-300 font-semibold rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-indigo-50 dark:hover:bg-gray-700 transition duration-200 flex items-center space-x-2 shadow-sm disabled:opacity-60"
+                        >
+                            {isAuthenticating ? (
+                                <>
+                                    <RiLoader2Fill className="animate-spin" />
+                                    <span>Checking access...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <FaSignInAlt />
+                                    <span>Sign in</span>
+                                </>
+                            )}
+                        </button>
+                    )}
                 </div>
             </div>
             {isEditMode && (

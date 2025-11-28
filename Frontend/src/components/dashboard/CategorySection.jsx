@@ -11,6 +11,7 @@ export const CategorySection = ({
     categoryData, 
     isCollapsed, 
     isEditMode,
+    canManage,
     onToggleCollapse, 
     onDeleteCategory,
     onDeleteItem, 
@@ -22,14 +23,15 @@ export const CategorySection = ({
     onOpenEditCategory
 }) => {
     const CollapseIcon = isCollapsed ? FaChevronRight : FaChevronDown;
+    const allowDrag = canManage && isEditMode;
 
     return (
         <section 
             key={category} 
-            onDrop={isEditMode ? onCategoryDrop : undefined}
-            onDragOver={isEditMode ? onCategoryDragOver : undefined}
-            onDragLeave={isEditMode ? onCategoryDragLeave : undefined}
-            className={`rounded-xl transition duration-200 ${isEditMode ? 'border border-dashed border-indigo-500' : ''}`}
+            onDrop={allowDrag ? onCategoryDrop : undefined}
+            onDragOver={allowDrag ? onCategoryDragOver : undefined}
+            onDragLeave={allowDrag ? onCategoryDragLeave : undefined}
+            className={`rounded-xl transition duration-200 ${allowDrag ? 'border border-dashed border-indigo-500' : ''}`}
         >
             {/* Category Header */}
             <div className="flex justify-between items-center w-full p-4 mb-2 text-xl font-bold rounded-xl bg-indigo-500/10 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 transition duration-200 shadow-md">
@@ -55,23 +57,25 @@ export const CategorySection = ({
                 </button>
                 
                 {/* Category Actions */}
-                <div className="flex items-center gap-2">
-                    <button
-                        onClick={() => onOpenEditCategory && onOpenEditCategory(category, categoryData.icon)}
-                        className="p-1 rounded-full text-indigo-700 hover:bg-indigo-200/60 dark:text-indigo-200 dark:hover:bg-indigo-700/40 transition duration-200"
-                        title={`Edit category ${category}`}
-                    >
-                        <FaPencilAlt size={14} />
-                    </button>
-                    {/* Category Delete Button */}
-                    <button
-                        onClick={() => onDeleteCategory(category, categoryData.items)}
-                        className="p-1 rounded-full text-red-500 hover:bg-red-500 hover:text-white transition duration-200"
-                        title={`Delete all ${categoryData.items.length} items in category: ${category}`}
-                    >
-                        <FaTrash size={16} />
-                    </button>
-                </div>
+                {canManage && (
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => onOpenEditCategory && onOpenEditCategory(category, categoryData.icon)}
+                            className="p-1 rounded-full text-indigo-700 hover:bg-indigo-200/60 dark:text-indigo-200 dark:hover:bg-indigo-700/40 transition duration-200"
+                            title={`Edit category ${category}`}
+                        >
+                            <FaPencilAlt size={14} />
+                        </button>
+                        {/* Category Delete Button */}
+                        <button
+                            onClick={() => onDeleteCategory(category, categoryData.items)}
+                            className="p-1 rounded-full text-red-500 hover:bg-red-500 hover:text-white transition duration-200"
+                            title={`Delete all ${categoryData.items.length} items in category: ${category}`}
+                        >
+                            <FaTrash size={16} />
+                        </button>
+                    </div>
+                )}
             </div>
 
             {/* Collapsible Content */}
@@ -83,7 +87,8 @@ export const CategorySection = ({
                             item={item}
                             onDelete={onDeleteItem}
                             onEdit={onEditItem}
-                            isEditMode={isEditMode}
+                            isEditMode={allowDrag}
+                            canManage={canManage}
                             onDropItem={onDropItem}
                         />
                     ))}

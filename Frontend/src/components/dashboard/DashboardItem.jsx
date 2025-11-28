@@ -8,9 +8,10 @@ import { FaUser } from "react-icons/fa";
 import { FaKey } from "react-icons/fa";
 
 
-export const DashboardItem = ({ item, onDelete, onEdit, isEditMode, onDropItem }) => {
+export const DashboardItem = ({ item, onDelete, onEdit, isEditMode, canManage, onDropItem }) => {
     const { id, name, url, description, icon, username, secretKey } = item;
     const [copiedField, setCopiedField] = useState(null);
+    const allowDrag = canManage && isEditMode;
 
     useEffect(() => {
         if (copiedField) {
@@ -40,22 +41,25 @@ export const DashboardItem = ({ item, onDelete, onEdit, isEditMode, onDropItem }
     };
     
     const handleDragStart = (e) => {
+        if (!allowDrag) return;
         e.dataTransfer.setData('text/plain', item.id);
         e.currentTarget.classList.add('opacity-40', 'border-dashed', 'border-4', 'border-indigo-500');
     };
 
     const handleDragEnd = (e) => {
+        if (!allowDrag) return;
         e.currentTarget.classList.remove('opacity-40', 'border-dashed', 'border-4', 'border-indigo-500');
     };
 
     const handleDragOver = (e) => {
         e.preventDefault();
-        if (isEditMode) {
+        if (allowDrag) {
              e.currentTarget.classList.add('shadow-xl', 'ring-2', 'ring-indigo-500');
         }
     };
     
     const handleDragLeave = (e) => {
+        if (!allowDrag) return;
         e.currentTarget.classList.remove('shadow-xl', 'ring-2', 'ring-indigo-500');
     };
 
@@ -63,7 +67,7 @@ export const DashboardItem = ({ item, onDelete, onEdit, isEditMode, onDropItem }
         e.preventDefault();
         // e.stopPropagation();
         e.currentTarget.classList.remove('shadow-xl', 'ring-2', 'ring-indigo-500');
-        if (isEditMode) {
+        if (allowDrag) {
             const draggedItemId = e.dataTransfer.getData('text/plain');
             const targetItemId = item.id;
             if (draggedItemId && draggedItemId !== targetItemId) {
@@ -75,41 +79,43 @@ export const DashboardItem = ({ item, onDelete, onEdit, isEditMode, onDropItem }
     return (
         <div
             onClick={handleClick}
-            draggable={isEditMode ? 'true' : 'false'}
-            onDragStart={isEditMode ? handleDragStart : undefined}
-            onDragEnd={isEditMode ? handleDragEnd : undefined}
-            onDragOver={isEditMode ? handleDragOver : undefined}
-            onDragLeave={isEditMode ? handleDragLeave : undefined}
-            onDrop={isEditMode ? handleDrop : undefined}
+            draggable={allowDrag ? 'true' : 'false'}
+            onDragStart={allowDrag ? handleDragStart : undefined}
+            onDragEnd={allowDrag ? handleDragEnd : undefined}
+            onDragOver={allowDrag ? handleDragOver : undefined}
+            onDragLeave={allowDrag ? handleDragLeave : undefined}
+            onDrop={allowDrag ? handleDrop : undefined}
             className={`group bg-white/50 dark:bg-gray-800/70 p-4 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg hover:shadow-2xl hover:border-indigo-400 transition duration-300 ease-out cursor-pointer backdrop-blur-sm relative overflow-hidden flex flex-col justify-between transform hover:-translate-y-1
-                ${isEditMode ? 'ring-2 ring-yellow-500 border-yellow-300 hover:shadow-yellow-500/50 cursor-move hover:-translate-y-0' : ''}
+                ${allowDrag ? 'ring-2 ring-yellow-500 border-yellow-300 hover:shadow-yellow-500/50 cursor-move hover:-translate-y-0' : ''}
             `}
         >
             
             {/* Action Buttons Container */}
-            <div className="absolute top-2 right-2 flex space-x-1">
-                <button
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        onEdit(item);
-                    }}
-                    className="text-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-full bg-white/70 dark:bg-gray-900/70 hover:bg-white dark:hover:bg-gray-700"
-                    title="Edit Item"
-                >
-                    <FaRegEdit size={16} />
-                </button>
+            {canManage && (
+                <div className="absolute top-2 right-2 flex space-x-1">
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onEdit(item);
+                        }}
+                        className="text-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-full bg-white/70 dark:bg-gray-900/70 hover:bg-white dark:hover:bg-gray-700"
+                        title="Edit Item"
+                    >
+                        <FaRegEdit size={16} />
+                    </button>
 
-                <button
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        onDelete(item);
-                    }}
-                    className="text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-full bg-white/70 dark:bg-gray-900/70 hover:bg-white dark:hover:bg-gray-700"
-                    title="Delete Item"
-                >
-                    <FiTrash2 size={16} />
-                </button>
-            </div>
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onDelete(item);
+                        }}
+                        className="text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-full bg-white/70 dark:bg-gray-900/70 hover:bg-white dark:hover:bg-gray-700"
+                        title="Delete Item"
+                    >
+                        <FiTrash2 size={16} />
+                    </button>
+                </div>
+            )}
 
             {/* Icon and Name */}
             <div className="flex items-center space-x-3 mb-3">

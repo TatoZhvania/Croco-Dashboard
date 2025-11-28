@@ -32,6 +32,9 @@ services:
       MYSQL_USER: user
       MYSQL_PASSWORD: password
       MYSQL_DATABASE: dashboard_db
+      ADMIN_USERNAME: admin
+      ADMIN_PASSWORD: admin123
+      ADMIN_TOKEN: change-me-admin-token
     ports:
       - "5000:5000"
     volumes:
@@ -44,7 +47,7 @@ services:
       dockerfile: Dockerfile
     container_name: react_dashboard_frontend
     depends_on:
-      - backend  # Updated reference
+      - backend
     ports:
       - "8080:80"
 

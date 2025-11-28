@@ -1,6 +1,7 @@
 import uuid
 from flask import jsonify, request
 from database.connection import get_db_connection
+from utils.auth import require_admin
 
 def get_items():
     """Retrieves all dashboard items, ordered by category and order_index."""
@@ -25,6 +26,7 @@ def get_items():
     
     return jsonify(items)
 
+@require_admin
 def add_item():
     """Adds a new dashboard item."""
     data = request.json
@@ -67,6 +69,7 @@ def add_item():
             cursor.close()
             conn.close()
 
+@require_admin
 def update_item(item_id):
     """Updates an existing dashboard item."""
     data = request.json
@@ -128,6 +131,7 @@ def update_item(item_id):
             cursor.close()
             conn.close()
 
+@require_admin
 def delete_item(item_id):
     """Deletes a dashboard item."""
     conn = get_db_connection()
