@@ -42,6 +42,7 @@ export default function App() {
   const [itemToDelete, setItemToDelete] = useState(null);
   const [categoryToDelete, setCategoryToDelete] = useState(null);
   const [collapsedCategories, setCollapsedCategories] = useState({});
+  const [categoryOrder, setCategoryOrder] = useState({});
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null); // { name, icon }
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -345,6 +346,79 @@ export default function App() {
     e.currentTarget.classList.remove('ring-4', 'ring-indigo-400');
   }, []);
 
+  // Category Section Drag and Drop for Reordering
+  const handleCategorySectionDragStart = useCallback((e, category) => {
+    if (!activeEditMode) return;
+    e.dataTransfer.setData('category/reorder', category);
+    e.currentTarget.style.opacity = '0.4';
+  }, [activeEditMode]);
+
+  const handleCategorySectionDragEnd = useCallback((e) => {
+    e.currentTarget.style.opacity = '1';
+  }, []);
+
+  const handleCategorySectionDragOver = useCallback((e, category) => {
+    if (!activeEditMode) return;
+    const draggedCategory = e.dataTransfer.types.includes('category/reorder');
+    if (draggedCategory) {
+      e.preventDefault();
+      e.currentTarget.classList.add('border-t-4', 'border-purple-500');
+    }
+  }, [activeEditMode]);
+
+  const handleCategorySectionDragLeave = useCallback((e) => {
+    e.currentTarget.classList.remove('border-t-4', 'border-purple-500');
+  }, []);
+
+  const handleCategorySectionDrop = useCallback((e, targetCategory) => {
+    e.preventDefault();
+    e.stopPropagation();
+    e.currentTarget.classList.remove('border-t-4', 'border-purple-500');
+    
+    if (!activeEditMode) return;
+    
+    const draggedCategory = e.dataTransfer.getData('category/reorder');
+    if (!draggedCategory || draggedCategory === targetCategory) return;
+
+    setCategoryOrder(prev => {
+      // Get all unique categories from current items
+      const categories = [...new Set(items.map(item => item.category || 'Uncategorized'))];
+      const currentOrder = { ...prev };
+      
+      // Initialize order for categories that don't have one
+      categories.forEach((cat, idx) => {
+        if (currentOrder[cat] === undefined) {
+          currentOrder[cat] = idx;
+        }
+      });
+
+      const draggedOrder = currentOrder[draggedCategory];
+      const targetOrder = currentOrder[targetCategory];
+
+      // Swap the orders
+      const newOrder = { ...currentOrder };
+      newOrder[draggedCategory] = targetOrder;
+      newOrder[targetCategory] = draggedOrder;
+
+      // Save to localStorage
+      localStorage.setItem('categoryOrder', JSON.stringify(newOrder));
+      
+      return newOrder;
+    });
+  }, [activeEditMode, items]);
+
+  // Load category order from localStorage on mount
+  useEffect(() => {
+    const savedOrder = localStorage.getItem('categoryOrder');
+    if (savedOrder) {
+      try {
+        setCategoryOrder(JSON.parse(savedOrder));
+      } catch (e) {
+        console.error('Failed to parse category order:', e);
+      }
+    }
+  }, []);
+
   const handleSubmitLogin = useCallback(async ({ username, password }) => {
     const success = await login(username, password);
     if (success) {
@@ -438,10 +512,27 @@ export default function App() {
     [filteredItems]
   );
 
-  const sortedCategories = useMemo(() =>
-    Object.keys(groupedData).sort(),
-    [groupedData]
-  );
+  const sortedCategories = useMemo(() => {
+    const categories = Object.keys(groupedData);
+    
+    // Sort by custom order if available, otherwise alphabetically
+    return categories.sort((a, b) => {
+      const orderA = categoryOrder[a];
+      const orderB = categoryOrder[b];
+      
+      // If both have custom order, use it
+      if (orderA !== undefined && orderB !== undefined) {
+        return orderA - orderB;
+      }
+      
+      // If only one has custom order, it comes first
+      if (orderA !== undefined) return -1;
+      if (orderB !== undefined) return 1;
+      
+      // Otherwise, sort alphabetically
+      return a.localeCompare(b);
+    });
+  }, [groupedData, categoryOrder]);
 
   const existingCategories = useMemo(() => {
     const categoryMap = new Map();
@@ -514,6 +605,11 @@ export default function App() {
                 onCategoryDragOver={handleCategoryDragOver}
                 onCategoryDragLeave={handleCategoryDragLeave}
                 onOpenEditCategory={handleOpenEditCategory}
+                onCategorySectionDragStart={handleCategorySectionDragStart}
+                onCategorySectionDragEnd={handleCategorySectionDragEnd}
+                onCategorySectionDragOver={handleCategorySectionDragOver}
+                onCategorySectionDragLeave={handleCategorySectionDragLeave}
+                onCategorySectionDrop={handleCategorySectionDrop}
               />
             ))}
           </div>
