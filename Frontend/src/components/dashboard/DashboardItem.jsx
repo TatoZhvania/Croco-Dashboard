@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { IconComponent } from '../../utils/icons.jsx';
 import { copyToClipboard } from '../../utils/clipboard.jsx';
+import { useLinkStatus } from '../../hooks/useLinkStatus.jsx';
 import { FaRegEdit } from "react-icons/fa";
 import { FiTrash2 } from "react-icons/fi";
 import { FaCheck } from "react-icons/fa";
@@ -12,6 +13,9 @@ export const DashboardItem = ({ item, onDelete, onEdit, isEditMode, canManage, o
     const { id, name, url, description, icon, username, secretKey } = item;
     const [copiedField, setCopiedField] = useState(null);
     const allowDrag = canManage && isEditMode;
+    
+    // Check link status
+    const { status } = useLinkStatus(url, true);
 
     useEffect(() => {
         if (copiedField) {
@@ -174,6 +178,24 @@ export const DashboardItem = ({ item, onDelete, onEdit, isEditMode, canManage, o
                         : (url.includes('.') ? url.split('/')[0] : 'Link')}
                 </div>
             </div>
+
+            {/* Link Status Indicator - Bottom Right Corner */}
+            <div 
+                className={`absolute bottom-2 right-2 w-3 h-3 rounded-full transition-all duration-300 ${
+                    status === 'reachable' 
+                        ? 'bg-green-500 shadow-lg shadow-green-500/50 animate-twinkle' 
+                        : status === 'unreachable' 
+                        ? 'bg-red-500 shadow-lg shadow-red-500/50 animate-twinkle-slow' 
+                        : 'bg-gray-400 animate-pulse'
+                }`}
+                title={
+                    status === 'reachable' 
+                        ? 'Link is reachable' 
+                        : status === 'unreachable' 
+                        ? 'Link is unreachable' 
+                        : 'Checking link status...'
+                }
+            />
         </div>
     );
 };

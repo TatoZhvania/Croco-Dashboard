@@ -10,6 +10,20 @@ export default {
       fontFamily: {
         sans: ['Inter', 'sans-serif'],
       },
+      keyframes: {
+        twinkle: {
+          '0%, 100%': { opacity: '1', transform: 'scale(1)' },
+          '50%': { opacity: '0.5', transform: 'scale(0.9)' },
+        },
+        'twinkle-slow': {
+          '0%, 100%': { opacity: '1', transform: 'scale(1)' },
+          '50%': { opacity: '0.6', transform: 'scale(0.95)' },
+        },
+      },
+      animation: {
+        twinkle: 'twinkle 2s ease-in-out infinite',
+        'twinkle-slow': 'twinkle-slow 3s ease-in-out infinite',
+      },
     },
   },
   plugins: [],

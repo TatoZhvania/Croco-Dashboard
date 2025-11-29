@@ -15,7 +15,7 @@ export const LogoutConfirmationModal = ({ isOpen, onCancel, onConfirm }) => {
                     </h3>
                 </div>
                 <p className="text-gray-700 dark:text-gray-300">
-                    You will return to guest mode and lose edit permissions until you sign in again.
+                    You will return to guest mode!
                 </p>
                 <div className="flex justify-end space-x-3 pt-2">
                     <button
