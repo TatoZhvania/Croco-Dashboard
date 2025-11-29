@@ -1,7 +1,8 @@
 import uuid
 from flask import jsonify, request
 from database.connection import get_db_connection
-from utils.auth import require_admin
+from utils.auth_helper import require_admin
+from utils.category_helpers import ensure_category_order_exists
 
 def get_items():
     """Retrieves all dashboard items, ordered by category and order_index."""
@@ -60,6 +61,10 @@ def add_item():
             item_id, name, url, description, icon, category, category_icon, username, secret_key, order_index
         ))
         conn.commit()
+        
+        # Ensure category exists in category_order table
+        ensure_category_order_exists(category)
+        
         return jsonify({"message": "Item added successfully", "id": item_id}), 201
     except Exception as e:
         print(f"Error adding item: {e}")

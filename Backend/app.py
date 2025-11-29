@@ -4,6 +4,7 @@ from flask_cors import CORS
 from database.connection import setup_database
 from routes.auth import login, session_status
 from routes.items import get_items, add_item, update_item, delete_item, export_items, import_items
+from routes.category_order import get_category_order, update_category_order, delete_category_order
 
 # --- FLASK SETUP ---
 app = Flask(__name__)
@@ -21,6 +22,9 @@ app.route('/api/items/<string:item_id>', methods=['PUT'])(update_item)
 app.route('/api/items/<string:item_id>', methods=['DELETE'])(delete_item)
 app.route('/api/items/export', methods=['GET'])(export_items)
 app.route('/api/items/import', methods=['POST'])(import_items)
+app.route('/api/category-order', methods=['GET'])(get_category_order)
+app.route('/api/category-order', methods=['PUT'])(update_category_order)
+app.route('/api/category-order/<string:category_name>', methods=['DELETE'])(delete_category_order)
 
 # --- RUN THE APP ---
 if __name__ == '__main__':
