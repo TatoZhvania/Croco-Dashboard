@@ -51,7 +51,7 @@ export const Header = ({
     }, [menuOpen]);
 
     return (
-        <header className="mb-6 pb-4 px-4 sm:px-6 lg:px-4 border-b border-gray-300/70 dark:border-gray-700 bg-gradient-to-r from-gray-50 via-gray-100 to-white dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 rounded-2xl shadow-sm">
+        <header className="mb-6 pb-4 px-4 sm:px-6 lg:px-4 bg-gradient-to-r from-gray-50 via-gray-100 to-white dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 rounded-2xl shadow-md">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-center">
                 
                 {/* Left Section: Title and Status */}
