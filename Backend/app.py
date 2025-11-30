@@ -1,5 +1,5 @@
 import os
-from flask import Flask
+from flask import Flask, jsonify
 from flask_cors import CORS
 from database.connection import setup_database
 from routes.auth import login, session_status
@@ -12,6 +12,12 @@ CORS(app)
 
 # Initialize the database on startup
 setup_database()
+
+# --- HEALTH CHECK ENDPOINT ---
+@app.route('/health', methods=['GET'])
+def health_check():
+    """Health check endpoint for Docker and monitoring."""
+    return jsonify({"status": "healthy", "service": "dashboard-backend"}), 200
 
 # --- API ROUTES ---
 app.route('/api/login', methods=['POST'])(login)
