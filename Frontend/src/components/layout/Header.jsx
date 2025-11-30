@@ -101,47 +101,49 @@ export const Header = ({
                             <div className="relative" ref={menuRef}>
                                 <button
                                     onClick={() => setMenuOpen((open) => !open)}
-                                    className="p-4 rounded-full bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-200 shadow-md flex items-center"
-                                    title="Admin menu"
+                                    className="p-4 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 dark:from-purple-600 dark:to-indigo-700 text-white hover:from-purple-600 hover:to-indigo-700 dark:hover:from-purple-700 dark:hover:to-indigo-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+                                    title="Settings"
                                 >
-                                    <FiMenu size={22} />
+                                    <FiMenu size={20} className={`transition-transform duration-300 ${menuOpen ? 'rotate-90' : 'rotate-0'}`} />
                                 </button>
 
-                                {menuOpen && (
-                                    <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg overflow-hidden z-20">
-                                        <button
-                                            onClick={() => {
-                                                onAddNew();
-                                                setMenuOpen(false);
-                                            }}
-                                            className="w-full px-5 py-3 text-left text-base font-semibold flex items-center gap-3 hover:bg-indigo-50 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-100"
-                                        >
-                                            <FaPlus size={18} />
-                                            <span className="text-indigo-400 dark:text-indigo-200">Add new link</span>
-                                        </button>
-                                        <button
-                                            onClick={() => handleMenuAction('export')}
-                                            className="w-full px-5 py-3 text-left text-base flex items-center gap-3 hover:bg-indigo-50 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-100"
-                                        >
-                                            <FiDownload size={18} />
-                                            <span className="font-medium">Export dashboard</span>
-                                        </button>
-                                        <button
-                                            onClick={() => handleMenuAction('import')}
-                                            className="w-full px-5 py-3 text-left text-base flex items-center gap-3 hover:bg-indigo-50 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-100"
-                                        >
-                                            <FiUpload size={18} />
-                                            <span className="font-medium">Import dashboard</span>
-                                        </button>
-                                        <button
-                                            onClick={() => handleMenuAction('logout')}
-                                            className="w-full px-5 py-3 text-left text-base flex items-center gap-3 hover:bg-red-50 dark:hover:bg-gray-700 text-red-600 dark:text-red-300"
-                                        >
-                                            <FaSignOutAlt size={18} />
-                                            <span className="font-semibold">Sign out</span>
-                                        </button>
-                                    </div>
-                                )}
+                                <div className={`absolute right-0 mt-2 w-96 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl overflow-hidden z-20 origin-top-right transition-all duration-300 ease-out ${
+                                    menuOpen 
+                                        ? 'opacity-100 scale-100 translate-y-0' 
+                                        : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
+                                }`}>
+                                    <button
+                                        onClick={() => {
+                                            onAddNew();
+                                            setMenuOpen(false);
+                                        }}
+                                        className="w-full px-6 py-4 text-left text-lg font-semibold flex items-center gap-4 hover:bg-indigo-50 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-100 transition-colors duration-200"
+                                    >
+                                        <FaPlus size={20} />
+                                        <span className="text-indigo-600 dark:text-indigo-400">Add new link</span>
+                                    </button>
+                                    <button
+                                        onClick={() => handleMenuAction('export')}
+                                        className="w-full px-6 py-4 text-left text-lg flex items-center gap-4 hover:bg-indigo-50 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-100 transition-colors duration-200"
+                                    >
+                                        <FiDownload size={20} />
+                                        <span className="font-medium">Export dashboard</span>
+                                    </button>
+                                    <button
+                                        onClick={() => handleMenuAction('import')}
+                                        className="w-full px-6 py-4 text-left text-lg flex items-center gap-4 hover:bg-indigo-50 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-100 transition-colors duration-200"
+                                    >
+                                        <FiUpload size={20} />
+                                        <span className="font-medium">Import dashboard</span>
+                                    </button>
+                                    <button
+                                        onClick={() => handleMenuAction('logout')}
+                                        className="w-full px-6 py-4 text-left text-lg flex items-center gap-4 hover:bg-red-50 dark:hover:bg-gray-700 text-red-600 dark:text-red-400 transition-colors duration-200"
+                                    >
+                                        <FaSignOutAlt size={20} />
+                                        <span className="font-semibold">Sign out</span>
+                                    </button>
+                                </div>
                             </div>
                         </>
                     ) : (
