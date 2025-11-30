@@ -1,7 +1,11 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useDarkMode } from './hooks/useDarkMode.jsx';
 import { useApiDashboardItems } from './hooks/useApiDashboardItems.jsx';
 import { useAuth } from './hooks/useAuth.jsx';
+import { useDragAndDrop } from './hooks/useDragAndDrop.jsx';
+import { useCategoryManagement } from './hooks/useCategoryManagement.jsx';
+import { useModals } from './hooks/useModals.jsx';
+import { useDataProcessing } from './hooks/useDataProcessing.jsx';
 
 // Components
 import { LoadingSpinner } from './components/common/LoadingSpinner.jsx';
@@ -36,80 +40,32 @@ export default function App() {
   } = useApiDashboardItems(token);
 
   // UI State
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [editingItem, setEditingItem] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [itemToDelete, setItemToDelete] = useState(null);
-  const [categoryToDelete, setCategoryToDelete] = useState(null);
-  const [collapsedCategories, setCollapsedCategories] = useState({});
-  const [categoryOrder, setCategoryOrder] = useState({});
   const [isEditMode, setIsEditMode] = useState(false);
-  const [editingCategory, setEditingCategory] = useState(null); // { name, icon }
-  const [showLoginModal, setShowLoginModal] = useState(false);
-  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-  const [pendingMove, setPendingMove] = useState(null); // { itemId, fromCategory, toCategory, updates }
-  const [showImportModal, setShowImportModal] = useState(false);
-  const [isImporting, setIsImporting] = useState(false);
-
-  // Keep edit-only UI closed for guest users
-  useEffect(() => {
-    if (!isAdmin) {
-      setIsEditMode(false);
-      setShowAddModal(false);
-      setEditingItem(null);
-      setEditingCategory(null);
-    }
-  }, [isAdmin]);
-
-  const openLoginModal = useCallback(() => {
-    resetAuthError();
-    setShowLoginModal(true);
-  }, [resetAuthError]);
-
-  const closeLoginModal = useCallback(() => {
-    resetAuthError();
-    setShowLoginModal(false);
-  }, [resetAuthError]);
 
   const canManage = isAdmin;
   const activeEditMode = canManage && isEditMode;
 
-  // Event Handlers
-  const toggleCollapse = useCallback((category) => {
-    setCollapsedCategories(prev => ({
-      ...prev,
-      [category]: !prev[category]
-    }));
-  }, []);
+  // Custom Hooks for Feature Management
+  const modals = useModals(canManage, isAdmin);
+  const categoryMgmt = useCategoryManagement(items, updateItem, canManage);
+  const { filteredItems, groupedData, sortedCategories } = useDataProcessing(
+    items,
+    searchTerm,
+    categoryMgmt.categoryOrder
+  );
+  const dragHandlers = useDragAndDrop(items, updateItem, activeEditMode, modals.setPendingMove);
 
-  const handleDeleteItemConfirmed = useCallback(async (itemId) => {
-    if (!canManage) return;
-    await deleteItem(itemId);
-    setItemToDelete(null);
-  }, [canManage, deleteItem]);
+  // Auth Modal Handlers
+  const openLoginModal = useCallback(() => {
+    modals.openLoginModal(resetAuthError);
+  }, [modals, resetAuthError]);
 
-  const handleDeleteCategoryConfirmed = useCallback(async (categoryName) => {
-    if (!canManage) return;
-    await deleteAllItemsInCategory(categoryName);
-    setCategoryToDelete(null);
-  }, [canManage, deleteAllItemsInCategory]);
+  const closeLoginModal = useCallback(() => {
+    modals.closeLoginModal(resetAuthError);
+  }, [modals, resetAuthError]);
 
-  const handleTriggerDeleteItem = useCallback((item) => {
-    if (!canManage) {
-      openLoginModal();
-      return;
-    }
-    setItemToDelete(item);
-  }, [canManage, openLoginModal]);
-
-  const handleTriggerDeleteCategory = useCallback((categoryName, items) => {
-    if (!canManage) {
-      openLoginModal();
-      return;
-    }
-    setCategoryToDelete({ name: categoryName, items: items });
-  }, [canManage, openLoginModal]);
-
+  // Edit Mode Toggle
   const handleToggleEditMode = useCallback(() => {
     if (!canManage) {
       openLoginModal();
@@ -118,307 +74,7 @@ export default function App() {
     setIsEditMode(prev => !prev);
   }, [canManage, openLoginModal]);
 
-  const handleAddNew = useCallback(() => {
-    if (!canManage) {
-      openLoginModal();
-      return;
-    }
-    setShowAddModal(true);
-  }, [canManage, openLoginModal]);
-
-  const handleEditItem = useCallback((item) => {
-    if (!canManage) {
-      openLoginModal();
-      return;
-    }
-    setEditingItem(item);
-  }, [canManage, openLoginModal]);
-
-  // Open category edit modal
-  const handleOpenEditCategory = useCallback((name, icon) => {
-    if (!canManage) {
-      openLoginModal();
-      return;
-    }
-    setEditingCategory({ name, icon });
-  }, [canManage, openLoginModal]);
-
-  // Save category edits (rename and/or icon change)
-  const handleSaveCategoryEdits = useCallback(async ({ name, icon }) => {
-    if (!editingCategory || !canManage) return;
-    const oldName = editingCategory.name;
-
-    // If name changed, rename category
-    if (name && name !== oldName) {
-      await (async () => {
-        // Move collapse state
-        setCollapsedCategories(prev => {
-          if (prev.hasOwnProperty(oldName)) {
-            const { [oldName]: oldVal, ...rest } = prev;
-            return { ...rest, [name]: oldVal };
-          }
-          return prev;
-        });
-
-        const affected = items.filter(i => (i.category || 'Uncategorized') === oldName);
-        for (const it of affected) {
-          await updateItem(it.id, { category: name });
-        }
-      })();
-    }
-
-    // If icon changed, update icon for all items in category (use new name if renamed)
-    const targetName = name || oldName;
-    const affectedForIcon = items.filter(i => (i.category || 'Uncategorized') === targetName);
-    const desiredIcon = icon && icon.trim() ? icon.trim() : 'Folder';
-    const iconNeedsUpdate = editingCategory.icon !== desiredIcon || name !== oldName; // update after rename to apply to moved items
-    if (iconNeedsUpdate) {
-      for (const it of affectedForIcon) {
-        await updateItem(it.id, { categoryIcon: desiredIcon });
-      }
-    }
-
-    setEditingCategory(null);
-  }, [canManage, editingCategory, items, updateItem, setCollapsedCategories]);
-
-  // Drag and Drop Logic
-  const handleDropItem = useCallback(async (draggedItemId, targetItemId, targetCategory) => {
-    if (!activeEditMode || !canManage) return;
-    const sameId = (item, id) => String(item.id) === String(id);
-
-    // Normalize ids because drag data comes back as strings
-    const draggedItem = items.find(i => sameId(i, draggedItemId));
-    const targetItem = items.find(i => sameId(i, targetItemId));
-    if (!draggedItem || !targetItem) {
-      console.warn('[DragDrop] Items not found', { draggedItemId, targetItemId });
-      return;
-    }
-
-    const resolvedCategory = targetCategory ?? targetItem.category ?? '';
-    console.log('[DragDrop] drop event detected', {
-      draggedItemId,
-      targetItemId,
-      resolvedCategory,
-      draggedCategory: draggedItem.category
-    });
-
-    if (draggedItem.category !== resolvedCategory) {
-      const fromCategory = draggedItem.category || '';
-      const fromCount = items.filter(i => (i.category || '') === fromCategory).length;
-      const updates = {
-        category: resolvedCategory,
-        categoryIcon: targetItem.category_icon
-      };
-
-      if (fromCount <= 1) {
-        setPendingMove({
-          itemId: draggedItemId,
-          fromCategory,
-          toCategory: resolvedCategory,
-          updates
-        });
-        return;
-      }
-
-      console.log('[DragDrop] moving item between categories', {
-        from: draggedItem.category,
-        to: resolvedCategory
-      });
-      await updateItem(draggedItemId, {
-        category: resolvedCategory,
-        categoryIcon: targetItem.category_icon
-      });
-      return;
-    }
-
-    // SAME CATEGORY REORDERING
-    const currentCategoryItems = items
-      .filter(i => i.category === resolvedCategory)
-      .sort((a, b) => a.orderIndex - b.orderIndex);
-
-    const draggedIndex = currentCategoryItems.findIndex(i => sameId(i, draggedItemId));
-    const targetIndex = currentCategoryItems.findIndex(i => sameId(i, targetItemId));
-    
-    if (draggedIndex === -1 || targetIndex === -1) {
-      console.warn('[DragDrop] Item indices not found in category', { draggedIndex, targetIndex, draggedItemId, targetItemId });
-      return;
-    }
-
-    // If the item is being dropped on itself or adjacent with no movement needed, skip
-    if (draggedIndex === targetIndex) {
-      console.log('[DragDrop] Item dropped on itself, skipping update');
-      return;
-    }
-
-    currentCategoryItems.splice(draggedIndex, 1);
-    currentCategoryItems.splice(targetIndex, 0, draggedItem);
-
-    // Compute a new order index between neighbors to avoid full resequencing
-    const prevOrder = currentCategoryItems[targetIndex - 1]?.orderIndex;
-    const nextOrder = currentCategoryItems[targetIndex + 1]?.orderIndex;
-
-    let newOrderIndex;
-    if (targetIndex === 0) {
-      // Place before the next item
-      newOrderIndex = (nextOrder ?? 0) - 1;
-    } else if (targetIndex === currentCategoryItems.length - 1) {
-      // Place after the previous item
-      newOrderIndex = (prevOrder ?? 0) + 1;
-    } else {
-      // Place between neighbors
-      const prevVal = prevOrder ?? 0;
-      const nextVal = nextOrder ?? prevVal + 1;
-      newOrderIndex = (prevVal + nextVal) / 2;
-    }
-
-    console.log('[DragDrop] reordering within category', {
-      draggedId: draggedItemId,
-      targetId: targetItemId,
-      draggedIndex,
-      targetIndex,
-      prevOrder,
-      nextOrder,
-      newOrderIndex,
-      currentDraggedOrderIndex: draggedItem.orderIndex
-    });
-
-    console.log('[DragDrop] updating with new order index:', { draggedItemId, newOrderIndex });
-    await updateItem(draggedItemId, { orderIndex: newOrderIndex });
-  }, [activeEditMode, canManage, items, updateItem]);
-
-  const handleCategoryDrop = useCallback((e, category, categoryData) => {
-    e.preventDefault();
-    e.currentTarget.classList.remove('ring-4', 'ring-indigo-400');
-    if (activeEditMode) {
-      const draggedItemId = e.dataTransfer.getData('text/plain');
-      if (draggedItemId) {
-        const draggedItem = items.find(i => String(i.id) === String(draggedItemId));
-        if (!draggedItem) {
-          console.warn('[CategoryDrop] Dragged item not found', draggedItemId);
-          return;
-        }
-
-        const fromCategory = draggedItem.category || '';
-        if (fromCategory === category) {
-          console.log('[CategoryDrop] Ignoring drop within same category', {
-            draggedItemId,
-            category
-          });
-          return;
-        }
-
-        const fromCount = items.filter(i => (i.category || '') === fromCategory).length;
-        const updates = {
-          category: category,
-          categoryIcon: categoryData.icon,
-          orderIndex: Date.now()
-        };
-
-        if (fromCount <= 1) {
-          setPendingMove({
-            itemId: draggedItemId,
-            fromCategory,
-            toCategory: category,
-            updates
-          });
-          return;
-        }
-
-        console.log('[CategoryDrop] Moving item between categories', {
-          draggedItemId,
-          from: fromCategory,
-          to: category
-        });
-
-        updateItem(draggedItemId, updates);
-      }
-    }
-  }, [activeEditMode, items, updateItem]);
-
-  const handleCategoryDragOver = useCallback((e) => {
-    if (activeEditMode && e.dataTransfer.types.includes('text/plain')) {
-      e.currentTarget.classList.add('ring-4', 'ring-indigo-400');
-      e.preventDefault();
-    }
-  }, [activeEditMode]);
-
-  const handleCategoryDragLeave = useCallback((e) => {
-    e.currentTarget.classList.remove('ring-4', 'ring-indigo-400');
-  }, []);
-
-  // Category Section Drag and Drop for Reordering
-  const handleCategorySectionDragStart = useCallback((e, category) => {
-    if (!activeEditMode) return;
-    e.dataTransfer.setData('category/reorder', category);
-    e.currentTarget.style.opacity = '0.4';
-  }, [activeEditMode]);
-
-  const handleCategorySectionDragEnd = useCallback((e) => {
-    e.currentTarget.style.opacity = '1';
-  }, []);
-
-  const handleCategorySectionDragOver = useCallback((e, category) => {
-    if (!activeEditMode) return;
-    const draggedCategory = e.dataTransfer.types.includes('category/reorder');
-    if (draggedCategory) {
-      e.preventDefault();
-      e.currentTarget.classList.add('border-t-4', 'border-purple-500');
-    }
-  }, [activeEditMode]);
-
-  const handleCategorySectionDragLeave = useCallback((e) => {
-    e.currentTarget.classList.remove('border-t-4', 'border-purple-500');
-  }, []);
-
-  const handleCategorySectionDrop = useCallback((e, targetCategory) => {
-    e.preventDefault();
-    e.stopPropagation();
-    e.currentTarget.classList.remove('border-t-4', 'border-purple-500');
-    
-    if (!activeEditMode) return;
-    
-    const draggedCategory = e.dataTransfer.getData('category/reorder');
-    if (!draggedCategory || draggedCategory === targetCategory) return;
-
-    setCategoryOrder(prev => {
-      // Get all unique categories from current items
-      const categories = [...new Set(items.map(item => item.category || 'Uncategorized'))];
-      const currentOrder = { ...prev };
-      
-      // Initialize order for categories that don't have one
-      categories.forEach((cat, idx) => {
-        if (currentOrder[cat] === undefined) {
-          currentOrder[cat] = idx;
-        }
-      });
-
-      const draggedOrder = currentOrder[draggedCategory];
-      const targetOrder = currentOrder[targetCategory];
-
-      // Swap the orders
-      const newOrder = { ...currentOrder };
-      newOrder[draggedCategory] = targetOrder;
-      newOrder[targetCategory] = draggedOrder;
-
-      // Save to localStorage
-      localStorage.setItem('categoryOrder', JSON.stringify(newOrder));
-      
-      return newOrder;
-    });
-  }, [activeEditMode, items]);
-
-  // Load category order from localStorage on mount
-  useEffect(() => {
-    const savedOrder = localStorage.getItem('categoryOrder');
-    if (savedOrder) {
-      try {
-        setCategoryOrder(JSON.parse(savedOrder));
-      } catch (e) {
-        console.error('Failed to parse category order:', e);
-      }
-    }
-  }, []);
-
+  // Auth Handlers
   const handleSubmitLogin = useCallback(async ({ username, password }) => {
     const success = await login(username, password);
     if (success) {
@@ -432,14 +88,15 @@ export default function App() {
   }, [closeLoginModal, logout]);
 
   const handleRequestLogout = useCallback(() => {
-    setShowLogoutConfirm(true);
-  }, []);
+    modals.setShowLogoutConfirm(true);
+  }, [modals]);
 
   const handleConfirmLogout = useCallback(() => {
     handleLogout();
-    setShowLogoutConfirm(false);
-  }, [handleLogout]);
+    modals.setShowLogoutConfirm(false);
+  }, [handleLogout, modals]);
 
+  // Import/Export Handlers
   const handleExport = useCallback(async () => {
     if (!canManage) {
       openLoginModal();
@@ -451,103 +108,6 @@ export default function App() {
     downloadJson(exportPayload, `dashboard-export-${timestamp}.json`);
   }, [canManage, exportItems, items, openLoginModal]);
 
-  const handleOpenImportModal = useCallback(() => {
-    if (!canManage) {
-      openLoginModal();
-      return;
-    }
-    setShowImportModal(true);
-  }, [canManage, openLoginModal]);
-
-  const handleImport = useCallback(async (itemsToImport, replaceExisting) => {
-    if (!canManage) return;
-    setIsImporting(true);
-    const success = await importItems(itemsToImport, replaceExisting);
-    setIsImporting(false);
-    if (success) {
-      setShowImportModal(false);
-    }
-  }, [canManage, importItems]);
-
-  const handleConfirmMove = useCallback(async () => {
-    if (!pendingMove) return;
-    await updateItem(pendingMove.itemId, pendingMove.updates);
-    setPendingMove(null);
-  }, [pendingMove, updateItem]);
-
-  // Data Processing
-  const filteredItems = useMemo(() =>
-    items
-      .filter(item => {
-        const lowerCaseSearch = searchTerm.toLowerCase();
-        return (
-          (item.name || '').toLowerCase().includes(lowerCaseSearch) ||
-          (item.description || '').toLowerCase().includes(lowerCaseSearch) ||
-          (item.url || '').toLowerCase().includes(lowerCaseSearch) ||
-          (item.category || '').toLowerCase().includes(lowerCaseSearch)
-        );
-      })
-      .sort((a, b) => {
-        const catA = a.category || 'Uncategorized';
-        const catB = b.category || 'Uncategorized';
-        if (catA < catB) return -1;
-        if (catA > catB) return 1;
-        return (a.orderIndex || 0) - (b.orderIndex || 0);
-      }),
-    [items, searchTerm]
-  );
-
-  const groupedData = useMemo(() =>
-    filteredItems.reduce((acc, item) => {
-      const cat = item.category || 'Uncategorized';
-      if (!acc[cat]) {
-        acc[cat] = {
-          items: [],
-          icon: item.category_icon || 'Folder'
-        };
-      }
-      acc[cat].items.push(item);
-      return acc;
-    }, {}),
-    [filteredItems]
-  );
-
-  const sortedCategories = useMemo(() => {
-    const categories = Object.keys(groupedData);
-    
-    // Sort by custom order if available, otherwise alphabetically
-    return categories.sort((a, b) => {
-      const orderA = categoryOrder[a];
-      const orderB = categoryOrder[b];
-      
-      // If both have custom order, use it
-      if (orderA !== undefined && orderB !== undefined) {
-        return orderA - orderB;
-      }
-      
-      // If only one has custom order, it comes first
-      if (orderA !== undefined) return -1;
-      if (orderB !== undefined) return 1;
-      
-      // Otherwise, sort alphabetically
-      return a.localeCompare(b);
-    });
-  }, [groupedData, categoryOrder]);
-
-  const existingCategories = useMemo(() => {
-    const categoryMap = new Map();
-    items.forEach(item => {
-      const catName = item.category || 'Uncategorized';
-      if (!categoryMap.has(catName)) {
-        categoryMap.set(catName, {
-          name: catName,
-          icon: item.category_icon || 'Folder'
-        });
-      }
-    });
-    return Array.from(categoryMap.values()).sort((a, b) => a.name.localeCompare(b.name));
-  }, [items]);
-
   // Render Logic
   const showFatalError = error && items.length === 0;
 
@@ -556,7 +116,6 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 p-4 sm:p-8 pb-6 sm:pb-8 font-sans transition-colors duration-300">
-      {/* Header: ThemeToggle removed */}
       <Header
         theme={theme}
         toggleTheme={toggleTheme}
@@ -570,9 +129,9 @@ export default function App() {
         onLogoutRequest={handleRequestLogout}
         canManage={canManage}
         onToggleEditMode={handleToggleEditMode}
-        onAddNew={handleAddNew}
+        onAddNew={() => modals.handleAddNew(openLoginModal)}
         onExport={handleExport}
-        onImport={handleOpenImportModal}
+        onImport={() => modals.handleOpenImportModal(openLoginModal)}
       />
 
       {error && items.length > 0 && (
@@ -593,76 +152,75 @@ export default function App() {
                 key={category}
                 category={category}
                 categoryData={groupedData[category]}
-                isCollapsed={collapsedCategories[category] === true}
+                isCollapsed={categoryMgmt.collapsedCategories[category] === true}
                 isEditMode={activeEditMode}
                 canManage={canManage}
-                onToggleCollapse={toggleCollapse}
-                onDeleteCategory={handleTriggerDeleteCategory}
-                onDeleteItem={handleTriggerDeleteItem}
-                onEditItem={handleEditItem}
-                onDropItem={handleDropItem}
-                onCategoryDrop={(e) => handleCategoryDrop(e, category, groupedData[category])}
-                onCategoryDragOver={handleCategoryDragOver}
-                onCategoryDragLeave={handleCategoryDragLeave}
-                onOpenEditCategory={handleOpenEditCategory}
-                onCategorySectionDragStart={handleCategorySectionDragStart}
-                onCategorySectionDragEnd={handleCategorySectionDragEnd}
-                onCategorySectionDragOver={handleCategorySectionDragOver}
-                onCategorySectionDragLeave={handleCategorySectionDragLeave}
-                onCategorySectionDrop={handleCategorySectionDrop}
+                onToggleCollapse={categoryMgmt.toggleCollapse}
+                onDeleteCategory={(cat, itms) => modals.handleTriggerDeleteCategory(cat, itms, openLoginModal)}
+                onDeleteItem={(item) => modals.handleTriggerDeleteItem(item, openLoginModal)}
+                onEditItem={(item) => modals.handleEditItem(item, openLoginModal)}
+                onDropItem={dragHandlers.handleDropItem}
+                onCategoryDrop={(e) => dragHandlers.handleCategoryDrop(e, category, groupedData[category])}
+                onCategoryDragOver={dragHandlers.handleCategoryDragOver}
+                onCategoryDragLeave={dragHandlers.handleCategoryDragLeave}
+                onOpenEditCategory={(name, icon) => categoryMgmt.handleOpenEditCategory(name, icon, openLoginModal)}
+                onCategorySectionDragStart={dragHandlers.handleCategorySectionDragStart}
+                onCategorySectionDragEnd={dragHandlers.handleCategorySectionDragEnd}
+                onCategorySectionDragOver={dragHandlers.handleCategorySectionDragOver}
+                onCategorySectionDragLeave={dragHandlers.handleCategorySectionDragLeave}
+                onCategorySectionDrop={(e, cat) => dragHandlers.handleCategorySectionDrop(e, cat, items, categoryMgmt.setCategoryOrder)}
               />
             ))}
           </div>
         )}
       </main>
 
-      {/* Footer with ThemeToggle at bottom-left (fixed by default) */}
       <Footer theme={theme} toggleTheme={toggleTheme} fixed />
 
       {/* Modals */}
-      {(showAddModal || editingItem) && (
+      {(modals.showAddModal || modals.editingItem) && (
         <ItemFormModal
           onSave={addItem}
           onUpdate={updateItem}
-          itemToEdit={editingItem}
-          existingCategories={existingCategories}
+          itemToEdit={modals.editingItem}
+          existingCategories={categoryMgmt.existingCategories}
           onClose={() => {
-            setShowAddModal(false);
-            setEditingItem(null);
+            modals.setShowAddModal(false);
+            modals.setEditingItem(null);
           }}
         />
       )}
 
-      {itemToDelete && (
+      {modals.itemToDelete && (
         <ConfirmationModal
-          item={itemToDelete}
-          onConfirm={handleDeleteItemConfirmed}
-          onCancel={() => setItemToDelete(null)}
+          item={modals.itemToDelete}
+          onConfirm={(id) => modals.handleDeleteItemConfirmed(id, deleteItem)}
+          onCancel={() => modals.setItemToDelete(null)}
         />
       )}
 
-      {categoryToDelete && (
+      {modals.categoryToDelete && (
         <ConfirmationModal
           type="category"
-          categoryName={categoryToDelete.name}
-          item={categoryToDelete.items}
-          onConfirm={handleDeleteCategoryConfirmed}
-          onCancel={() => setCategoryToDelete(null)}
+          categoryName={modals.categoryToDelete.name}
+          item={modals.categoryToDelete.items}
+          onConfirm={(name) => modals.handleDeleteCategoryConfirmed(name, deleteAllItemsInCategory)}
+          onCancel={() => modals.setCategoryToDelete(null)}
         />
       )}
 
-      {editingCategory && (
+      {categoryMgmt.editingCategory && (
         <CategoryEditModal
-          isOpen={!!editingCategory}
-          initialName={editingCategory.name}
-          initialIcon={editingCategory.icon}
-          onClose={() => setEditingCategory(null)}
-          onSave={handleSaveCategoryEdits}
+          isOpen={!!categoryMgmt.editingCategory}
+          initialName={categoryMgmt.editingCategory.name}
+          initialIcon={categoryMgmt.editingCategory.icon}
+          onClose={() => categoryMgmt.setEditingCategory(null)}
+          onSave={categoryMgmt.handleSaveCategoryEdits}
         />
       )}
 
       <AuthModal
-        isOpen={showLoginModal}
+        isOpen={modals.showLoginModal}
         onClose={closeLoginModal}
         onSubmit={handleSubmitLogin}
         isLoading={isChecking}
@@ -670,27 +228,26 @@ export default function App() {
       />
 
       <LogoutConfirmationModal
-        isOpen={showLogoutConfirm}
-        onCancel={() => setShowLogoutConfirm(false)}
+        isOpen={modals.showLogoutConfirm}
+        onCancel={() => modals.setShowLogoutConfirm(false)}
         onConfirm={handleConfirmLogout}
       />
 
       <MoveConfirmationModal
-        isOpen={!!pendingMove}
-        fromCategory={pendingMove?.fromCategory}
-        toCategory={pendingMove?.toCategory}
-        onConfirm={handleConfirmMove}
-        onCancel={() => setPendingMove(null)}
+        isOpen={!!modals.pendingMove}
+        fromCategory={modals.pendingMove?.fromCategory}
+        toCategory={modals.pendingMove?.toCategory}
+        onConfirm={() => modals.handleConfirmMove(updateItem)}
+        onCancel={() => modals.setPendingMove(null)}
       />
 
       <ImportModal
-        isOpen={showImportModal}
-        onClose={() => setShowImportModal(false)}
-        onImport={handleImport}
-        isLoading={isImporting}
+        isOpen={modals.showImportModal}
+        onClose={() => modals.setShowImportModal(false)}
+        onImport={(items, replace) => modals.handleImport(items, replace, importItems)}
+        isLoading={modals.isImporting}
         error={error}
       />
-
     </div>
   );
 }
