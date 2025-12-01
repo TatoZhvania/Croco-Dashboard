@@ -1,4 +1,5 @@
 // API configuration
+// const API_HOST = 'http://10.0.10.81:5000';
 const API_HOST = window.location.hostname === 'localhost'
     ? 'http://localhost:5000'
     : 'http://api:5000';

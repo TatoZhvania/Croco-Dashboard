@@ -157,6 +157,7 @@ export const useDragAndDrop = (items, updateItem, activeEditMode, setPendingMove
   const handleCategoryDragOver = useCallback((e) => {
     if (activeEditMode && e.dataTransfer.types.includes('text/plain')) {
       e.currentTarget.classList.add('ring-4', 'ring-indigo-400');
+      // Prevent default to allow drop but don't stop propagation to allow scrolling
       e.preventDefault();
     }
   }, [activeEditMode]);
@@ -170,6 +171,37 @@ export const useDragAndDrop = (items, updateItem, activeEditMode, setPendingMove
     if (!activeEditMode) return;
     e.dataTransfer.setData('category/reorder', category);
     e.currentTarget.style.opacity = '0.4';
+    
+    // Enable auto-scrolling during drag
+    let scrollInterval;
+    const autoScroll = (event) => {
+      const scrollSpeed = 10;
+      const scrollZone = 100; // pixels from edge to trigger scroll
+      const windowHeight = window.innerHeight;
+      const mouseY = event.clientY;
+      
+      if (mouseY < scrollZone) {
+        // Scroll up
+        window.scrollBy(0, -scrollSpeed);
+      } else if (mouseY > windowHeight - scrollZone) {
+        // Scroll down
+        window.scrollBy(0, scrollSpeed);
+      }
+    };
+    
+    // Set up scroll interval
+    const dragHandler = (event) => {
+      autoScroll(event);
+    };
+    
+    document.addEventListener('drag', dragHandler);
+    
+    // Clean up on drag end
+    const cleanup = () => {
+      document.removeEventListener('drag', dragHandler);
+      document.removeEventListener('dragend', cleanup);
+    };
+    document.addEventListener('dragend', cleanup);
   }, [activeEditMode]);
 
   const handleCategorySectionDragEnd = useCallback((e) => {
@@ -180,6 +212,7 @@ export const useDragAndDrop = (items, updateItem, activeEditMode, setPendingMove
     if (!activeEditMode) return;
     const draggedCategory = e.dataTransfer.types.includes('category/reorder');
     if (draggedCategory) {
+      // Only prevent default to enable drop, but allow the event to bubble for scrolling
       e.preventDefault();
       e.currentTarget.classList.add('border-t-4', 'border-purple-500');
     }

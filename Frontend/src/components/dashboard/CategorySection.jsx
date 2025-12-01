@@ -34,15 +34,24 @@ export const CategorySection = ({
     const handleDragOver = (e) => {
         if (!allowDrag) return;
         
+        // Only prevent default to allow drop, but don't prevent scrolling
         // Check if it's a category being dragged (for reordering)
         if (e.dataTransfer.types.includes('category/reorder')) {
-            e.preventDefault();
+            // Only prevent default when actually over the drop zone
+            if (e.currentTarget.contains(e.target)) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
             e.currentTarget.classList.add('border-t-4', 'border-purple-500');
             onCategorySectionDragOver && onCategorySectionDragOver(e, category);
         }
         // Check if it's an item being dragged (for moving to this category)
         else if (e.dataTransfer.types.includes('text/plain')) {
-            e.preventDefault();
+            // Only prevent default when actually over the drop zone
+            if (e.currentTarget.contains(e.target)) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
             e.currentTarget.classList.add('ring-4', 'ring-indigo-400');
             onCategoryDragOver && onCategoryDragOver(e);
         }
