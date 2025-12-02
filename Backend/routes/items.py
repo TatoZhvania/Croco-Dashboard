@@ -1,8 +1,9 @@
 import uuid
 from flask import jsonify, request
 from database.connection import get_db_connection
-from utils.auth_helper import require_admin
+from utils.auth_helper import require_admin, extract_token
 from utils.category_helpers import ensure_category_order_exists
+from config import ADMIN_TOKEN
 
 def get_items():
     """Retrieves all dashboard items, ordered by category and order_index."""
@@ -13,7 +14,17 @@ def get_items():
     items = []
     try:
         cursor = conn.cursor(dictionary=True)
-        query = "SELECT * FROM dashboard_items ORDER BY category, order_index"
+        
+        # Check if user is admin
+        token = extract_token()
+        is_admin = (token == ADMIN_TOKEN)
+        
+        # If admin, return all items. Otherwise, filter out admin-only items
+        if is_admin:
+            query = "SELECT * FROM dashboard_items ORDER BY category, order_index"
+        else:
+            query = "SELECT * FROM dashboard_items WHERE is_admin_only = FALSE OR is_admin_only IS NULL ORDER BY category, order_index"
+        
         cursor.execute(query)
         items = cursor.fetchall()
         
@@ -49,16 +60,17 @@ def add_item():
     username = data.get('username', '')
     secret_key = data.get('secretKey', '')
     order_index = data.get('orderIndex', 0.0)
+    is_admin_only = data.get('isAdminOnly', False)
 
     try:
         cursor = conn.cursor()
         query = """
         INSERT INTO dashboard_items 
-        (id, name, url, description, icon, category, category_icon, username, secret_key, order_index) 
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        (id, name, url, description, icon, category, category_icon, username, secret_key, order_index, is_admin_only) 
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
         cursor.execute(query, (
-            item_id, name, url, description, icon, category, category_icon, username, secret_key, order_index
+            item_id, name, url, description, icon, category, category_icon, username, secret_key, order_index, is_admin_only
         ))
         conn.commit()
         
@@ -107,7 +119,8 @@ def update_item(item_id):
             'categoryIcon': 'category_icon',
             'username': 'username',
             'secretKey': 'secret_key',
-            'orderIndex': 'order_index'
+            'orderIndex': 'order_index',
+            'isAdminOnly': 'is_admin_only'
         }
 
         for key, col_name in field_map.items():
@@ -206,8 +219,8 @@ def import_items():
 
         insert_query = """
             INSERT INTO dashboard_items
-            (id, name, url, description, icon, category, category_icon, username, secret_key, order_index)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            (id, name, url, description, icon, category, category_icon, username, secret_key, order_index, is_admin_only)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             ON DUPLICATE KEY UPDATE
                 name = VALUES(name),
                 url = VALUES(url),
@@ -217,7 +230,8 @@ def import_items():
                 category_icon = VALUES(category_icon),
                 username = VALUES(username),
                 secret_key = VALUES(secret_key),
-                order_index = VALUES(order_index)
+                order_index = VALUES(order_index),
+                is_admin_only = VALUES(is_admin_only)
         """
 
         for idx, item in enumerate(incoming_items):
@@ -236,6 +250,7 @@ def import_items():
             order_index = item.get("order_index")
             if order_index is None:
                 order_index = float(idx)
+            is_admin_only = item.get("is_admin_only") or item.get("isAdminOnly") or False
 
             cursor.execute(insert_query, (
                 item_id,
@@ -247,7 +262,8 @@ def import_items():
                 category_icon,
                 username,
                 secret_key,
-                order_index
+                order_index,
+                is_admin_only
             ))
 
         conn.commit()

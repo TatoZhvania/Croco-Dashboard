@@ -21,7 +21,9 @@ export const useApiDashboardItems = (authToken = '') => {
 
         while (retries < maxRetries) {
             try {
-                const response = await axios.get(API_BASE_URL);
+                const response = await axios.get(API_BASE_URL, {
+                    headers: authHeaders()
+                });
                 
                 // Map database fields to React component fields
                 const data = response.data.map((item, index) => ({
@@ -29,6 +31,7 @@ export const useApiDashboardItems = (authToken = '') => {
                     categoryIcon: item.category_icon || 'Folder',
                     secretKey: item.secret_key || '',
                     orderIndex: item.order_index !== undefined && item.order_index !== null ? item.order_index : index,
+                    isAdminOnly: item.is_admin_only || false,
                 }));
 
                 setItems(data);
@@ -44,7 +47,7 @@ export const useApiDashboardItems = (authToken = '') => {
                 await new Promise(resolve => setTimeout(resolve, Math.pow(2, retries) * 1000));
             }
         }
-    }, []);
+    }, [authHeaders]);
 
     useEffect(() => {
         fetchData();

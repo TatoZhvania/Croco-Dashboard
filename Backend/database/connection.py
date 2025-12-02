@@ -24,6 +24,8 @@ def setup_database():
 
     try:
         cursor = conn.cursor()
+        
+        # Create dashboard_items table
         create_table_query = """
         CREATE TABLE IF NOT EXISTS dashboard_items (
             id VARCHAR(36) PRIMARY KEY,
@@ -35,13 +37,37 @@ def setup_database():
             category_icon VARCHAR(50),
             username VARCHAR(255),
             secret_key TEXT,
-            order_index DOUBLE
+            order_index DOUBLE,
+            is_admin_only BOOLEAN DEFAULT FALSE
         );
         """
         cursor.execute(create_table_query)
+        
+        # Create category_order table
+        create_category_order_table = """
+        CREATE TABLE IF NOT EXISTS category_order (
+            category_name VARCHAR(100) PRIMARY KEY,
+            order_index INT NOT NULL DEFAULT 0
+        );
+        """
+        cursor.execute(create_category_order_table)
+        
         # Ensure existing deployments upgrade from FLOAT to DOUBLE so that
         # large order_index values (used for drag/drop) retain precision.
         cursor.execute("ALTER TABLE dashboard_items MODIFY COLUMN order_index DOUBLE")
+        
+        # Add is_admin_only column to existing tables if it doesn't exist
+        cursor.execute("""
+            SELECT COUNT(*) 
+            FROM information_schema.COLUMNS 
+            WHERE TABLE_SCHEMA = DATABASE() 
+            AND TABLE_NAME = 'dashboard_items' 
+            AND COLUMN_NAME = 'is_admin_only'
+        """)
+        column_exists = cursor.fetchone()[0]
+        if column_exists == 0:
+            cursor.execute("ALTER TABLE dashboard_items ADD COLUMN is_admin_only BOOLEAN DEFAULT FALSE")
+        
         conn.commit()
     except Error as e:
         print(f"Error setting up database: {e}")

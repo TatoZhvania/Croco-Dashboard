@@ -2,17 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { IconComponent } from '../../utils/icons.jsx';
 import { copyToClipboard } from '../../utils/clipboard.jsx';
 import { useLinkStatus } from '../../hooks/useLinkStatus.jsx';
-import { FaRegEdit } from "react-icons/fa";
+import { FaRegEdit, FaCheck, FaUser, FaKey, FaEyeSlash } from "react-icons/fa";
 import { FiTrash2 } from "react-icons/fi";
-import { FaCheck } from "react-icons/fa";
-import { FaUser } from "react-icons/fa";
-import { FaKey } from "react-icons/fa";
 
 
 export const DashboardItem = ({ item, onDelete, onEdit, isEditMode, canManage, onDropItem }) => {
-    const { id, name, url, description, icon, username, secretKey } = item;
+    const { id, name, url, description, icon, username, secretKey, isAdminOnly, is_admin_only } = item;
     const [copiedField, setCopiedField] = useState(null);
     const allowDrag = canManage && isEditMode;
+    
+    // Convert is_admin_only to boolean (database returns 0/1)
+    const itemIsAdminOnly = Boolean(isAdminOnly || is_admin_only);
     
     // Check link status
     const { status } = useLinkStatus(url, true);
@@ -94,9 +94,18 @@ export const DashboardItem = ({ item, onDelete, onEdit, isEditMode, canManage, o
             `}
         >
             
-            {/* Action Buttons Container */}
+            {/* Admin Only Badge - Top Right (only visible to admins) */}
+            {canManage && itemIsAdminOnly && (
+                <div className="absolute top-3 right-2 flex items-center space-x-1 bg-amber-500/90 dark:bg-amber-600/90 text-white text-xs px-2 py-1 rounded-full shadow-md z-10"
+                    title="This item is only visible to administrators">
+                    <FaEyeSlash size={12} />
+                    <span className="font-semibold">Admin Only</span>
+                </div>
+            )}
+            
+            {/* Action Buttons Container - positioned below badge when admin-only */}
             {canManage && (
-                <div className="absolute top-2 right-2 flex space-x-1">
+                <div className={`absolute right-2 flex space-x-1 ${itemIsAdminOnly ? 'top-10' : 'top-2'}`}>
                     <button
                         onClick={(e) => {
                             e.stopPropagation();

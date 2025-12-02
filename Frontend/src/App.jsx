@@ -184,6 +184,7 @@ export default function App() {
           onUpdate={updateItem}
           itemToEdit={modals.editingItem}
           existingCategories={categoryMgmt.existingCategories}
+          isAdmin={isAdmin}
           onClose={() => {
             modals.setShowAddModal(false);
             modals.setEditingItem(null);

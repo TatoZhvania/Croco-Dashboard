@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { IconComponent } from '../../utils/icons.jsx'; // Only import from utils
-import { FaTag } from "react-icons/fa6";
+import { FaTag, FaEyeSlash } from "react-icons/fa6";
 import { FaLock } from "react-icons/fa";
 import { RiLoader2Fill } from "react-icons/ri";
 
-export const ItemFormModal = ({ onClose, itemToEdit, onSave, onUpdate, existingCategories }) => {
+export const ItemFormModal = ({ onClose, itemToEdit, onSave, onUpdate, existingCategories, isAdmin }) => {
     const [name, setName] = useState(itemToEdit?.name || '');
     const [url, setUrl] = useState(itemToEdit?.url || '');
     const [description, setDescription] = useState(itemToEdit?.description || '');
@@ -12,7 +12,8 @@ export const ItemFormModal = ({ onClose, itemToEdit, onSave, onUpdate, existingC
     const [category, setCategory] = useState(itemToEdit?.category || '');
     const [categoryIcon, setCategoryIcon] = useState(itemToEdit?.categoryIcon || 'Folder');
     const [username, setUsername] = useState(itemToEdit?.username || '');
-    const [secretKey, setSecretKey] = useState(itemToEdit?.secretKey || ''); 
+    const [secretKey, setSecretKey] = useState(itemToEdit?.secretKey || '');
+    const [isAdminOnly, setIsAdminOnly] = useState(itemToEdit?.isAdminOnly || itemToEdit?.is_admin_only || false); 
     
     const [isSaving, setIsSaving] = useState(false);
     const [isExistingCategorySelected, setIsExistingCategorySelected] = useState(
@@ -62,6 +63,7 @@ export const ItemFormModal = ({ onClose, itemToEdit, onSave, onUpdate, existingC
             username: username.trim(),
             secretKey: secretKey.trim(),
             orderIndex: itemToEdit?.orderIndex !== undefined ? itemToEdit.orderIndex : Date.now(),
+            isAdminOnly: isAdminOnly,
         };
 
         try {
@@ -188,6 +190,32 @@ export const ItemFormModal = ({ onClose, itemToEdit, onSave, onUpdate, existingC
                                 className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white p-2.5 shadow-sm focus:ring-indigo-500 focus:border-indigo-500" />
                         </label>
                     </div>
+
+                    {/* Admin Only Visibility Setting */}
+                    {isAdmin && (
+                        <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center text-amber-600 dark:text-amber-300 font-semibold">
+                                    <FaEyeSlash size={20} className="mr-2" />
+                                    Visibility Settings
+                                </div>
+                            </div>
+                            <label className="flex items-center mt-3 cursor-pointer group">
+                                <input
+                                    type="checkbox"
+                                    checked={isAdminOnly}
+                                    onChange={(e) => setIsAdminOnly(e.target.checked)}
+                                    className="w-5 h-5 text-amber-600 bg-gray-100 border-gray-300 rounded focus:ring-amber-500 dark:focus:ring-amber-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer"
+                                />
+                                <span className="ml-3 text-gray-700 dark:text-gray-300 group-hover:text-amber-700 dark:group-hover:text-amber-200">
+                                    <strong>Admin Only</strong> - Only visible to administrators
+                                </span>
+                            </label>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 ml-8">
+                                When enabled, this item and its category will be hidden from non-admin users
+                            </p>
+                        </div>
+                    )}
 
                     {/* Action Buttons */}
                     <div className="flex justify-end space-x-3 pt-4">
