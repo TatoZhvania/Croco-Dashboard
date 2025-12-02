@@ -7,12 +7,15 @@ import { FiTrash2 } from "react-icons/fi";
 
 
 export const DashboardItem = ({ item, onDelete, onEdit, isEditMode, canManage, onDropItem }) => {
-    const { id, name, url, description, icon, username, secretKey, isAdminOnly, is_admin_only } = item;
+    const { id, name, url, description, icon, username, secretKey, isAdminOnly, is_admin_only, size } = item;
     const [copiedField, setCopiedField] = useState(null);
     const allowDrag = canManage && isEditMode;
     
     // Convert is_admin_only to boolean (database returns 0/1)
     const itemIsAdminOnly = Boolean(isAdminOnly || is_admin_only);
+    
+    // Check if item is extra-small size
+    const isExtraSmall = size === 'extra-small';
     
     // Check link status
     const { status } = useLinkStatus(url, true);
@@ -92,6 +95,7 @@ export const DashboardItem = ({ item, onDelete, onEdit, isEditMode, canManage, o
             className={`group bg-white/50 dark:bg-gray-800/70 p-4 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg hover:shadow-2xl hover:border-indigo-400 transition duration-300 ease-out cursor-pointer backdrop-blur-sm relative overflow-hidden flex flex-col justify-between transform hover:-translate-y-1
                 ${allowDrag ? 'ring-2 ring-yellow-500 border-yellow-300 hover:shadow-yellow-500/50 cursor-move hover:-translate-y-0' : ''}
             `}
+            title={isExtraSmall ? `${name}${description ? ' - ' + description : ''}\n${url}` : ''}
         >
             
             {/* Admin Only Badge - Top Right (only visible to admins) */}
@@ -99,7 +103,7 @@ export const DashboardItem = ({ item, onDelete, onEdit, isEditMode, canManage, o
                 <div className="absolute top-3 right-2 flex items-center space-x-1 bg-amber-500/90 dark:bg-amber-600/90 text-white text-xs px-2 py-1 rounded-full shadow-md z-10"
                     title="This item is only visible to administrators">
                     <FaEyeSlash size={12} />
-                    <span className="font-semibold">Admin Only</span>
+                    {!isExtraSmall && <span className="font-semibold">Admin Only</span>}
                 </div>
             )}
             
