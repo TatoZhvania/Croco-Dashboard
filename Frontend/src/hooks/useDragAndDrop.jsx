@@ -236,18 +236,35 @@ export const useDragAndDrop = (items, updateItem, activeEditMode, setPendingMove
       const categories = [...new Set(items.map(item => item.category || 'Uncategorized'))];
       const currentOrder = { ...prev };
       
+      // Initialize any missing categories
       categories.forEach((cat, idx) => {
         if (currentOrder[cat] === undefined) {
           currentOrder[cat] = idx;
         }
       });
 
-      const draggedOrder = currentOrder[draggedCategory];
-      const targetOrder = currentOrder[targetCategory];
+      // Create sorted array of [category, order] pairs
+      const sortedCategories = categories
+        .map(cat => ({ name: cat, order: currentOrder[cat] }))
+        .sort((a, b) => a.order - b.order);
 
-      const newOrder = { ...currentOrder };
-      newOrder[draggedCategory] = targetOrder;
-      newOrder[targetCategory] = draggedOrder;
+      // Find positions of dragged and target categories
+      const draggedIndex = sortedCategories.findIndex(c => c.name === draggedCategory);
+      const targetIndex = sortedCategories.findIndex(c => c.name === targetCategory);
+
+      if (draggedIndex === -1 || targetIndex === -1) return prev;
+
+      // Remove dragged category from its current position
+      const [draggedItem] = sortedCategories.splice(draggedIndex, 1);
+      
+      // Insert at target position
+      sortedCategories.splice(targetIndex, 0, draggedItem);
+
+      // Reassign order numbers based on new positions
+      const newOrder = {};
+      sortedCategories.forEach((cat, idx) => {
+        newOrder[cat.name] = idx;
+      });
 
       localStorage.setItem('categoryOrder', JSON.stringify(newOrder));
       

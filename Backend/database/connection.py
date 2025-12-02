@@ -38,7 +38,8 @@ def setup_database():
             username VARCHAR(255),
             secret_key TEXT,
             order_index DOUBLE,
-            is_admin_only BOOLEAN DEFAULT FALSE
+            is_admin_only BOOLEAN DEFAULT FALSE,
+            size VARCHAR(20) DEFAULT 'medium'
         );
         """
         cursor.execute(create_table_query)
@@ -67,6 +68,18 @@ def setup_database():
         column_exists = cursor.fetchone()[0]
         if column_exists == 0:
             cursor.execute("ALTER TABLE dashboard_items ADD COLUMN is_admin_only BOOLEAN DEFAULT FALSE")
+        
+        # Add size column to existing tables if it doesn't exist
+        cursor.execute("""
+            SELECT COUNT(*) 
+            FROM information_schema.COLUMNS 
+            WHERE TABLE_SCHEMA = DATABASE() 
+            AND TABLE_NAME = 'dashboard_items' 
+            AND COLUMN_NAME = 'size'
+        """)
+        size_column_exists = cursor.fetchone()[0]
+        if size_column_exists == 0:
+            cursor.execute("ALTER TABLE dashboard_items ADD COLUMN size VARCHAR(20) DEFAULT 'medium'")
         
         conn.commit()
     except Error as e:

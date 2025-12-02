@@ -32,6 +32,7 @@ export const useApiDashboardItems = (authToken = '') => {
                     secretKey: item.secret_key || '',
                     orderIndex: item.order_index !== undefined && item.order_index !== null ? item.order_index : index,
                     isAdminOnly: item.is_admin_only || false,
+                    size: item.size || 'medium',
                 }));
 
                 setItems(data);

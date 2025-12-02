@@ -61,16 +61,17 @@ def add_item():
     secret_key = data.get('secretKey', '')
     order_index = data.get('orderIndex', 0.0)
     is_admin_only = data.get('isAdminOnly', False)
+    size = data.get('size', 'medium')
 
     try:
         cursor = conn.cursor()
         query = """
         INSERT INTO dashboard_items 
-        (id, name, url, description, icon, category, category_icon, username, secret_key, order_index, is_admin_only) 
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        (id, name, url, description, icon, category, category_icon, username, secret_key, order_index, is_admin_only, size) 
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
         cursor.execute(query, (
-            item_id, name, url, description, icon, category, category_icon, username, secret_key, order_index, is_admin_only
+            item_id, name, url, description, icon, category, category_icon, username, secret_key, order_index, is_admin_only, size
         ))
         conn.commit()
         
@@ -120,7 +121,8 @@ def update_item(item_id):
             'username': 'username',
             'secretKey': 'secret_key',
             'orderIndex': 'order_index',
-            'isAdminOnly': 'is_admin_only'
+            'isAdminOnly': 'is_admin_only',
+            'size': 'size'
         }
 
         for key, col_name in field_map.items():
@@ -219,8 +221,8 @@ def import_items():
 
         insert_query = """
             INSERT INTO dashboard_items
-            (id, name, url, description, icon, category, category_icon, username, secret_key, order_index, is_admin_only)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            (id, name, url, description, icon, category, category_icon, username, secret_key, order_index, is_admin_only, size)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             ON DUPLICATE KEY UPDATE
                 name = VALUES(name),
                 url = VALUES(url),
@@ -231,7 +233,8 @@ def import_items():
                 username = VALUES(username),
                 secret_key = VALUES(secret_key),
                 order_index = VALUES(order_index),
-                is_admin_only = VALUES(is_admin_only)
+                is_admin_only = VALUES(is_admin_only),
+                size = VALUES(size)
         """
 
         for idx, item in enumerate(incoming_items):
@@ -251,6 +254,7 @@ def import_items():
             if order_index is None:
                 order_index = float(idx)
             is_admin_only = item.get("is_admin_only") or item.get("isAdminOnly") or False
+            size = item.get("size") or "medium"
 
             cursor.execute(insert_query, (
                 item_id,
@@ -263,7 +267,8 @@ def import_items():
                 username,
                 secret_key,
                 order_index,
-                is_admin_only
+                is_admin_only,
+                size
             ))
 
         conn.commit()

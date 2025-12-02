@@ -13,7 +13,8 @@ export const ItemFormModal = ({ onClose, itemToEdit, onSave, onUpdate, existingC
     const [categoryIcon, setCategoryIcon] = useState(itemToEdit?.categoryIcon || 'Folder');
     const [username, setUsername] = useState(itemToEdit?.username || '');
     const [secretKey, setSecretKey] = useState(itemToEdit?.secretKey || '');
-    const [isAdminOnly, setIsAdminOnly] = useState(itemToEdit?.isAdminOnly || itemToEdit?.is_admin_only || false); 
+    const [isAdminOnly, setIsAdminOnly] = useState(itemToEdit?.isAdminOnly || itemToEdit?.is_admin_only || false);
+    const [size, setSize] = useState(itemToEdit?.size || 'medium'); 
     
     const [isSaving, setIsSaving] = useState(false);
     const [isExistingCategorySelected, setIsExistingCategorySelected] = useState(
@@ -64,6 +65,7 @@ export const ItemFormModal = ({ onClose, itemToEdit, onSave, onUpdate, existingC
             secretKey: secretKey.trim(),
             orderIndex: itemToEdit?.orderIndex !== undefined ? itemToEdit.orderIndex : Date.now(),
             isAdminOnly: isAdminOnly,
+            size: size,
         };
 
         try {
@@ -80,8 +82,18 @@ export const ItemFormModal = ({ onClose, itemToEdit, onSave, onUpdate, existingC
         }
     };
 
+    const handleBackdropClick = (e) => {
+        // Only close if clicking the backdrop itself, not the modal content
+        if (e.target === e.currentTarget) {
+            onClose();
+        }
+    };
+
     return (
-        <div className="fixed inset-0 bg-gray-900 bg-opacity-70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div 
+            className="fixed inset-0 bg-gray-900 bg-opacity-70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            onClick={handleBackdropClick}
+        >
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-3xl p-6 md:p-8 overflow-y-auto max-h-[90vh]">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 border-b pb-2">
                     {isEditMode ? 'Edit Dashboard Item' : 'Add New Dashboard Item'}
@@ -169,6 +181,25 @@ export const ItemFormModal = ({ onClose, itemToEdit, onSave, onUpdate, existingC
                                 Try: {suggestedItemIcons.join(', ')}
                             </div>
                         </div>
+                    </label>
+                    
+                    {/* Box Size Selector */}
+                    <label className="block">
+                        <span className="text-gray-700 dark:text-gray-300 font-medium">Box Size</span>
+                        <select
+                            value={size}
+                            onChange={(e) => setSize(e.target.value)}
+                            className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white p-2.5 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                        >
+                            <option value="extra-small">Extra Small (Compact)</option>
+                            <option value="small">Small</option>
+                            <option value="medium">Medium</option>
+                            <option value="large">Large</option>
+                            <option value="extra-large">Extra Large (Full Width)</option>
+                        </select>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            Choose the display size for this item card
+                        </p>
                     </label>
                     
                     {/* Credential Fields Block */}

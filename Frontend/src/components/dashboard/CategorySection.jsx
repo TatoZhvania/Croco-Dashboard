@@ -160,18 +160,39 @@ export const CategorySection = ({
             <div
                 className={`transition-all duration-500 overflow-hidden ${isCollapsed ? 'max-h-0 opacity-0' : 'max-h-[2000px] opacity-100'}`}
             >
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-2">
-                    {categoryData.items.map(item => (
-                        <DashboardItem
-                            key={item.id}
-                            item={item}
-                            onDelete={onDeleteItem}
-                            onEdit={onEditItem}
-                            isEditMode={allowDrag}
-                            canManage={canManage}
-                            onDropItem={onDropItem}
-                        />
-                    ))}
+                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4 p-2">
+                    {categoryData.items.map(item => {
+                        // Map size to Tailwind col-span classes
+                        // Using 8-column grid for better flexibility:
+                        // extra-small: 1 col (1/8 width)
+                        // small: 2 cols (1/4 width)
+                        // medium: 4 cols (1/2 width)
+                        // large: 6 cols (3/4 width)
+                        // extra-large: 8 cols (full width)
+                        const getSizeClass = (size) => {
+                            switch(size) {
+                                case 'extra-small': return 'col-span-1';
+                                case 'small': return 'col-span-1 sm:col-span-2';
+                                case 'medium': return 'col-span-2 sm:col-span-4';
+                                case 'large': return 'col-span-2 sm:col-span-6';
+                                case 'extra-large': return 'col-span-2 sm:col-span-8';
+                                default: return 'col-span-2 sm:col-span-4'; // default to medium
+                            }
+                        };
+
+                        return (
+                            <div key={item.id} className={getSizeClass(item.size)}>
+                                <DashboardItem
+                                    item={item}
+                                    onDelete={onDeleteItem}
+                                    onEdit={onEditItem}
+                                    isEditMode={allowDrag}
+                                    canManage={canManage}
+                                    onDropItem={onDropItem}
+                                />
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
         </section>
