@@ -134,6 +134,9 @@ export default function App() {
         onImport={() => modals.handleOpenImportModal(openLoginModal)}
       />
 
+      {/* Spacer for fixed header */}
+      <div className="h-[140px]"></div>
+
       {error && items.length > 0 && (
         <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/40 text-red-700 dark:text-red-200 border border-red-200 dark:border-red-800">
           {error}

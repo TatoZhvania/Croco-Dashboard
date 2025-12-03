@@ -27,6 +27,7 @@ export const Header = ({
     onLogoutRequest
 }) => {
     const [menuOpen, setMenuOpen] = useState(false);
+    const [isScrolled, setIsScrolled] = useState(false);
     const menuRef = useRef(null);
 
     const handleMenuAction = (action) => {
@@ -50,8 +51,27 @@ export const Header = ({
         };
     }, [menuOpen]);
 
+    // Scroll detection
+    useEffect(() => {
+        const handleScroll = () => {
+            // Add blur background when scrolled
+            if (window.scrollY > 10) {
+                setIsScrolled(true);
+            } else {
+                setIsScrolled(false);
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
     return (
-        <header className="mb-6 pb-4 px-4 sm:px-6 lg:px-4 bg-gradient-to-r from-gray-50 via-gray-100 to-white dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 rounded-2xl shadow-md">
+        <header className={`fixed top-0 left-0 right-0 z-50 pt-4 pb-4 px-4 sm:px-6 lg:px-4 rounded-2xl shadow-md transition-all duration-300 ${
+            isScrolled 
+                ? 'bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl shadow-xl' 
+                : 'bg-gradient-to-r from-gray-50 via-gray-100 to-white dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 m-4'
+        }`}>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-center">
                 
                 {/* Left Section: Title and Status */}

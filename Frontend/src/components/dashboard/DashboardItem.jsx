@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { IconComponent } from '../../utils/icons.jsx';
 import { copyToClipboard } from '../../utils/clipboard.jsx';
 import { useLinkStatus } from '../../hooks/useLinkStatus.jsx';
@@ -12,6 +12,7 @@ export const DashboardItem = ({ item, onDelete, onEdit, isEditMode, canManage, o
     const [isResizing, setIsResizing] = useState(false);
     const [previewSize, setPreviewSize] = useState(null);
     const allowDrag = canManage && isEditMode;
+    const scrollIntervalRef = useRef(null);
     
     // Convert is_admin_only to boolean (database returns 0/1)
     const itemIsAdminOnly = Boolean(isAdminOnly || is_admin_only);
@@ -57,11 +58,54 @@ export const DashboardItem = ({ item, onDelete, onEdit, isEditMode, canManage, o
         if (!allowDrag || isResizing) return;
         e.dataTransfer.setData('text/plain', item.id);
         e.currentTarget.classList.add('opacity-40', 'border-dashed', 'border-4', 'border-indigo-500');
+        
+        // Start auto-scroll detection
+        const autoScroll = (clientY) => {
+            const scrollThreshold = 100; // pixels from edge to trigger scroll
+            const scrollSpeed = 10; // pixels per interval
+            
+            const viewportHeight = window.innerHeight;
+            
+            // Clear any existing interval
+            if (scrollIntervalRef.current) {
+                clearInterval(scrollIntervalRef.current);
+                scrollIntervalRef.current = null;
+            }
+            
+            // Scroll up when near top
+            if (clientY < scrollThreshold) {
+                scrollIntervalRef.current = setInterval(() => {
+                    window.scrollBy(0, -scrollSpeed);
+                }, 16); // ~60fps
+            }
+            // Scroll down when near bottom
+            else if (clientY > viewportHeight - scrollThreshold) {
+                scrollIntervalRef.current = setInterval(() => {
+                    window.scrollBy(0, scrollSpeed);
+                }, 16);
+            }
+        };
+        
+        // Listen for drag movement
+        const handleDragMove = (dragEvent) => {
+            autoScroll(dragEvent.clientY);
+        };
+        
+        document.addEventListener('drag', handleDragMove);
+        e.currentTarget.addEventListener('dragend', () => {
+            document.removeEventListener('drag', handleDragMove);
+        }, { once: true });
     };
 
     const handleDragEnd = (e) => {
         if (!allowDrag) return;
         e.currentTarget.classList.remove('opacity-40', 'border-dashed', 'border-4', 'border-indigo-500');
+        
+        // Clear auto-scroll interval
+        if (scrollIntervalRef.current) {
+            clearInterval(scrollIntervalRef.current);
+            scrollIntervalRef.current = null;
+        }
     };
 
     const handleDragOver = (e) => {
