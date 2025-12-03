@@ -159,6 +159,7 @@ export default function App() {
                 onDeleteCategory={(cat, itms) => modals.handleTriggerDeleteCategory(cat, itms, openLoginModal)}
                 onDeleteItem={(item) => modals.handleTriggerDeleteItem(item, openLoginModal)}
                 onEditItem={(item) => modals.handleEditItem(item, openLoginModal)}
+                onUpdateItemSize={(itemId, newSize) => updateItem(itemId, { size: newSize })}
                 onDropItem={dragHandlers.handleDropItem}
                 onCategoryDrop={(e) => dragHandlers.handleCategoryDrop(e, category, groupedData[category])}
                 onCategoryDragOver={dragHandlers.handleCategoryDragOver}

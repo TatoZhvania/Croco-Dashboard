@@ -16,6 +16,7 @@ export const CategorySection = ({
     onDeleteCategory,
     onDeleteItem, 
     onEditItem,
+    onUpdateItemSize,
     onDropItem,
     onCategoryDrop,
     onCategoryDragOver,
@@ -29,6 +30,16 @@ export const CategorySection = ({
 }) => {
     const CollapseIcon = isCollapsed ? FaChevronRight : FaChevronDown;
     const allowDrag = canManage && isEditMode;
+    const [resizingItem, setResizingItem] = React.useState(null); // { itemId, previewSize }
+
+    const handleItemPreview = (itemId, previewSize, itemRect, gridRect) => {
+        // Track which item is being resized
+        if (previewSize) {
+            setResizingItem({ itemId, previewSize });
+        } else {
+            setResizingItem(null);
+        }
+    };
 
     // Handle drag over for both category reordering and item drops
     const handleDragOver = (e) => {
@@ -160,7 +171,7 @@ export const CategorySection = ({
             <div
                 className={`transition-all duration-500 overflow-hidden ${isCollapsed ? 'max-h-0 opacity-0' : 'max-h-[2000px] opacity-100'}`}
             >
-                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4 p-2">
+                <div className="relative grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4 p-2">
                     {categoryData.items.map(item => {
                         // Map size to Tailwind col-span classes
                         // Using 8-column grid for better flexibility:
@@ -180,15 +191,26 @@ export const CategorySection = ({
                             }
                         };
 
+                        // Use preview size if this item is being resized
+                        const displaySize = (resizingItem && resizingItem.itemId === item.id) 
+                            ? resizingItem.previewSize 
+                            : item.size;
+
                         return (
-                            <div key={item.id} className={getSizeClass(item.size)}>
+                            <div 
+                                key={item.id} 
+                                className={`${getSizeClass(displaySize)} transition-all duration-300 ease-in-out`}
+                            >
                                 <DashboardItem
                                     item={item}
                                     onDelete={onDeleteItem}
                                     onEdit={onEditItem}
+                                    onUpdateSize={onUpdateItemSize}
                                     isEditMode={allowDrag}
                                     canManage={canManage}
                                     onDropItem={onDropItem}
+                                    onResizePreview={handleItemPreview}
+                                    onResizeEnd={() => setResizingItem(null)}
                                 />
                             </div>
                         );
