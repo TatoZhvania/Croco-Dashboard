@@ -374,7 +374,7 @@ export const DashboardItem = ({ item, onDelete, onEdit, isEditMode, canManage, o
 
             {/* URL Tag */}
             <div className={`flex justify-between items-center mt-3 ${isExtraSmall ? 'text-[20px] mt-2' : 'text-s'}`}>
-                <div className={`text-indigo-600 dark:text-indigo-400 bg-indigo-100 dark:bg-indigo-900/50 rounded-full inline-block self-start truncate ${isExtraSmall ? 'px-1.5 py-0.5 text-center w-full text-[15px]' : 'px-2 py-0.5'}`}>
+                <div className={`text-indigo-600 dark:text-indigo-400 bg-indigo-100 dark:bg-indigo-900/50 rounded-full inline-block self-start truncate ${isExtraSmall ? 'px-3 py-0.5 text-center text-[15px]' : 'px-3 py-1'}`}>
                     {(url.startsWith('http://') || url.startsWith('https://')) 
                         ? (new URL(url).hostname || url)
                         : (url.includes('.') ? url.split('/')[0] : 'Link')}
@@ -384,7 +384,7 @@ export const DashboardItem = ({ item, onDelete, onEdit, isEditMode, canManage, o
             {/* Link Status Indicator - Bottom Right Corner */}
             <div 
                 className={`absolute rounded-full transition-all duration-300 ${
-                    isExtraSmall ? 'bottom-1 right-1 w-2 h-2' : 'bottom-2 right-2 w-3 h-3'
+                    isExtraSmall ? 'bottom-1 right-1 w-2 h-2' : 'bottom-2 right-2 w-2 h-2'
                 } ${
                     status === 'reachable' 
                         ? 'bg-green-500 shadow-lg shadow-green-500/50 animate-twinkle' 
