@@ -23,6 +23,9 @@ export const DashboardItem = ({ item, onDelete, onEdit, isEditMode, canManage, o
     // Check if item is extra-small size
     const isExtraSmall = currentSize === 'extra-small';
     
+    // Check if item is small size
+    const isSmall = currentSize === 'small';
+    
     // Check link status
     const { status } = useLinkStatus(url, true);
 
@@ -283,7 +286,7 @@ export const DashboardItem = ({ item, onDelete, onEdit, isEditMode, canManage, o
             
             {/* Admin Only Badge - Top Right (only visible to admins) */}
             {canManage && itemIsAdminOnly && (
-                <div className="absolute top-2 right-2 flex items-center space-x-1 bg-amber-500/90 dark:bg-amber-600/90 text-white text-xs px-2 py-1 rounded-full shadow-md z-10"
+                <div className="absolute top-2 right-2 flex items-center space-x-1 bg-amber-500/90 dark:bg-amber-600/90 text-white text-xs px-2 py-0.5 rounded-full shadow-md z-10"
                     title="This item is only visible to administrators">
                     <FaEyeSlash size={12} />
                     {!isExtraSmall && <span className="font-semibold">Admin Only</span>}
@@ -328,7 +331,7 @@ export const DashboardItem = ({ item, onDelete, onEdit, isEditMode, canManage, o
                     className="text-indigo-500 dark:text-indigo-300 flex-shrink-0" 
                     size={isExtraSmall ? 24 : 32}
                 />
-                <h3 className={`font-semibold text-gray-900 dark:text-white truncate ${isExtraSmall ? 'text-xl' : 'text-xl'}`}>
+                <h3 className={`font-semibold text-gray-900 dark:text-white truncate ${isExtraSmall ? 'text-xl max-w-[150px]' : 'text-xl'} ${(isSmall) ? 'max-w-[300px]' : ''}`}>
                     {name}
                 </h3>
             </div>
