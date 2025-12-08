@@ -7,7 +7,7 @@ import { useCategoryManagement } from './hooks/useCategoryManagement.jsx';
 import { useModals } from './hooks/useModals.jsx';
 import { useDataProcessing } from './hooks/useDataProcessing.jsx';
 
-// Components
+// Components-test
 import { LoadingSpinner } from './components/common/LoadingSpinner.jsx';
 import { ErrorDisplay } from './components/common/ErrorDisplay.jsx';
 import { Header } from './components/layout/Header.jsx';
