@@ -187,12 +187,14 @@ export const Header = ({
                     )}
                 </div>
             </div>
-            {isEditMode && (
+            <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                isEditMode ? 'max-h-20 opacity-100 mt-4' : 'max-h-0 opacity-0 mt-0'
+            }`}>
                 <div className="text-center text-sm font-semibold text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 p-2 rounded-lg border border-yellow-300 dark:border-yellow-700">
                     <IoMove size={18} className="inline mr-2" />
                     EDIT MODE IS ACTIVE: Drag and drop links to reorder or move them between categories.
                 </div>
-            )}
+            </div>
         </header>
     );
 };
