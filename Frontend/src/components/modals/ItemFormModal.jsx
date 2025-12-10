@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { IconComponent } from '../../utils/icons.jsx'; // Only import from utils
+import { ENVIRONMENT_OPTIONS, ENVIRONMENTS } from '../../utils/environments.jsx';
 import { FaTag, FaEyeSlash } from "react-icons/fa6";
 import { FaLock } from "react-icons/fa";
 import { RiLoader2Fill } from "react-icons/ri";
@@ -14,7 +15,8 @@ export const ItemFormModal = ({ onClose, itemToEdit, onSave, onUpdate, existingC
     const [username, setUsername] = useState(itemToEdit?.username || '');
     const [secretKey, setSecretKey] = useState(itemToEdit?.secretKey || '');
     const [isAdminOnly, setIsAdminOnly] = useState(itemToEdit?.isAdminOnly || itemToEdit?.is_admin_only || false);
-    const [size, setSize] = useState(itemToEdit?.size || 'medium'); 
+    const [size, setSize] = useState(itemToEdit?.size || 'medium');
+    const [environment, setEnvironment] = useState(itemToEdit?.environment || ENVIRONMENTS.COMMON); 
     
     const [isSaving, setIsSaving] = useState(false);
     const [isExistingCategorySelected, setIsExistingCategorySelected] = useState(
@@ -66,6 +68,7 @@ export const ItemFormModal = ({ onClose, itemToEdit, onSave, onUpdate, existingC
             orderIndex: itemToEdit?.orderIndex !== undefined ? itemToEdit.orderIndex : Date.now(),
             isAdminOnly: isAdminOnly,
             size: size,
+            environment: environment,
         };
 
         try {
@@ -199,6 +202,25 @@ export const ItemFormModal = ({ onClose, itemToEdit, onSave, onUpdate, existingC
                         </select>
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                             Choose the display size for this item card
+                        </p>
+                    </label>
+                    
+                    {/* Environment Selection */}
+                    <label className="block">
+                        <span className="text-gray-700 dark:text-gray-300 font-medium">Environment</span>
+                        <select
+                            value={environment}
+                            onChange={(e) => setEnvironment(e.target.value)}
+                            className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white p-2.5 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                        >
+                            {ENVIRONMENT_OPTIONS.map(env => (
+                                <option key={env.value} value={env.value}>
+                                    {env.label}
+                                </option>
+                            ))}
+                        </select>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            Choose the environment for this item
                         </p>
                     </label>
                     

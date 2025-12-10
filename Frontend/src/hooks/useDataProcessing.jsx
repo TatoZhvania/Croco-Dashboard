@@ -3,17 +3,23 @@ import { useMemo } from 'react';
 /**
  * Custom hook to process and filter dashboard items
  */
-export const useDataProcessing = (items, searchTerm, categoryOrder) => {
+export const useDataProcessing = (items, searchTerm, selectedEnvironment, categoryOrder) => {
   const filteredItems = useMemo(() =>
     items
       .filter(item => {
         const lowerCaseSearch = searchTerm.toLowerCase();
-        return (
+        const matchesSearch = (
           (item.name || '').toLowerCase().includes(lowerCaseSearch) ||
           (item.description || '').toLowerCase().includes(lowerCaseSearch) ||
           (item.url || '').toLowerCase().includes(lowerCaseSearch) ||
           (item.category || '').toLowerCase().includes(lowerCaseSearch)
         );
+        
+        // Filter by environment (null means show all)
+        const matchesEnvironment = !selectedEnvironment || 
+          (item.environment || 'common') === selectedEnvironment;
+        
+        return matchesSearch && matchesEnvironment;
       })
       .sort((a, b) => {
         const catA = a.category || 'Uncategorized';
@@ -22,7 +28,7 @@ export const useDataProcessing = (items, searchTerm, categoryOrder) => {
         if (catA > catB) return 1;
         return (a.orderIndex || 0) - (b.orderIndex || 0);
       }),
-    [items, searchTerm]
+    [items, searchTerm, selectedEnvironment]
   );
 
   const groupedData = useMemo(() =>

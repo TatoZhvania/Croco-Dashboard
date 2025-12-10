@@ -62,16 +62,17 @@ def add_item():
     order_index = data.get('orderIndex', 0.0)
     is_admin_only = data.get('isAdminOnly', False)
     size = data.get('size', 'medium')
+    environment = data.get('environment', 'common')
 
     try:
         cursor = conn.cursor()
         query = """
         INSERT INTO dashboard_items 
-        (id, name, url, description, icon, category, category_icon, username, secret_key, order_index, is_admin_only, size) 
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        (id, name, url, description, icon, category, category_icon, username, secret_key, order_index, is_admin_only, size, environment) 
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
         cursor.execute(query, (
-            item_id, name, url, description, icon, category, category_icon, username, secret_key, order_index, is_admin_only, size
+            item_id, name, url, description, icon, category, category_icon, username, secret_key, order_index, is_admin_only, size, environment
         ))
         conn.commit()
         
@@ -122,7 +123,8 @@ def update_item(item_id):
             'secretKey': 'secret_key',
             'orderIndex': 'order_index',
             'isAdminOnly': 'is_admin_only',
-            'size': 'size'
+            'size': 'size',
+            'environment': 'environment'
         }
 
         for key, col_name in field_map.items():

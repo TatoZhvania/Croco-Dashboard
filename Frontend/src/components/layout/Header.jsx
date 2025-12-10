@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ThemeToggle } from '../common/ThemeToggle.jsx';
-import { FaHome } from "react-icons/fa";
+import { ENVIRONMENT_FILTER_OPTIONS, getEnvironmentConfig } from '../../utils/environments.jsx';
+import { FaHome, FaFilter } from "react-icons/fa";
 import { FaSearch } from "react-icons/fa";
 import { FiMove, FiDownload, FiUpload, FiMenu } from "react-icons/fi";
 import { FaPlus } from "react-icons/fa";
@@ -15,6 +16,8 @@ export const Header = ({
     items,
     searchTerm,
     onSearchChange,
+    selectedEnvironment,
+    onEnvironmentChange,
     isAdmin,
     canManage,
     isAuthenticating,
@@ -27,8 +30,20 @@ export const Header = ({
     onLogoutRequest
 }) => {
     const [menuOpen, setMenuOpen] = useState(false);
+    const [filterOpen, setFilterOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
     const menuRef = useRef(null);
+    const filterRef = useRef(null);
+
+    const handleEnvironmentClick = (envValue) => {
+        // Toggle behavior: if clicking the same environment, show all (null)
+        if (selectedEnvironment === envValue) {
+            onEnvironmentChange(null);
+        } else {
+            onEnvironmentChange(envValue);
+        }
+        setFilterOpen(false);
+    };
 
     const handleMenuAction = (action) => {
         if (action === 'export') onExport();
@@ -42,14 +57,17 @@ export const Header = ({
             if (menuRef.current && !menuRef.current.contains(event.target)) {
                 setMenuOpen(false);
             }
+            if (filterRef.current && !filterRef.current.contains(event.target)) {
+                setFilterOpen(false);
+            }
         };
-        if (menuOpen) {
+        if (menuOpen || filterOpen) {
             document.addEventListener('mousedown', handleClickOutside);
         }
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
-    }, [menuOpen]);
+    }, [menuOpen, filterOpen]);
 
     // Scroll detection
     useEffect(() => {
@@ -85,16 +103,90 @@ export const Header = ({
                     </p>
                 </div>
 
-                {/* Middle Section: Search Bar */}
-                <div className="relative w-full">
-                    <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
-                    <input
-                        type="text"
-                        placeholder="Search links by name, category or URL..."
-                        value={searchTerm}
-                        onChange={(e) => onSearchChange(e.target.value)}
-                        className="w-full py-2.5 pl-10 pr-4 rounded-xl border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-indigo-500 focus:border-indigo-500 shadow-inner transition duration-200"
-                    />
+                {/* Middle Section: Search Bar with Filter */}
+                <div className="flex items-center gap-2 w-full">
+
+                    {/* Search Bar */}
+                    <div className="relative flex-1">
+                        <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
+                        <input
+                            type="text"
+                            placeholder="Search links by name, category or URL..."
+                            value={searchTerm}
+                            onChange={(e) => onSearchChange(e.target.value)}
+                            className="w-full py-2.5 pl-10 pr-4 rounded-xl border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-indigo-500 focus:border-indigo-500 shadow-inner transition duration-200"
+                        />
+                    </div>
+                                        {/* Filter Button */}
+                    <div className="relative" ref={filterRef}>
+                        <button
+                            onClick={() => setFilterOpen(!filterOpen)}
+                            className={`p-3 rounded-xl transition-all duration-300 shadow-md ${
+                                selectedEnvironment 
+                                    ? 'text-white' 
+                                    : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                            }`}
+                            style={{
+                                backgroundColor: selectedEnvironment ? getEnvironmentConfig(selectedEnvironment).color : undefined
+                            }}
+                            title={selectedEnvironment ? `Filtered by ${getEnvironmentConfig(selectedEnvironment).label}` : 'Filter by environment'}
+                        >
+                            <FaFilter className="text-gray-400 dark:text-gray-500" size={18} />
+                        </button>
+
+                        {/* Filter Dropdown */}
+                        <div className={`absolute left-0 mt-2 w-72 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl overflow-hidden z-30 origin-top-left transition-all duration-300 ease-out ${
+                            filterOpen 
+                                ? 'opacity-100 scale-100 translate-y-0' 
+                                : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
+                        }`}>
+                            <div className="p-3">
+                                <div className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 px-2">
+                                    Filter by Environment
+                                </div>
+                                <div className="space-y-2">
+                                    {ENVIRONMENT_FILTER_OPTIONS.map(env => {
+                                        const isSelected = selectedEnvironment === env.value;
+                                        const envConfig = getEnvironmentConfig(env.value);
+                                        
+                                        return (
+                                            <button
+                                                key={env.value}
+                                                onClick={() => handleEnvironmentClick(env.value)}
+                                                className={`w-full px-4 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-3 ${
+                                                    isSelected 
+                                                        ? 'text-white shadow-md transform scale-[0.98]' 
+                                                        : 'bg-gray-50 dark:bg-gray-700/50 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                                                }`}
+                                                style={{
+                                                    backgroundColor: isSelected ? envConfig.color : undefined
+                                                }}
+                                            >
+                                                <span 
+                                                    className="w-4 h-4 rounded-full flex-shrink-0"
+                                                    style={{ backgroundColor: envConfig.color }}
+                                                />
+                                                <span className="flex-1 text-left">{env.label}</span>
+                                                {isSelected && <span className="text-xs opacity-80">✓ Active</span>}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                                {selectedEnvironment && (
+                                    <button
+                                        onClick={() => {
+                                            onEnvironmentChange(null);
+                                            setFilterOpen(false);
+                                        }}
+                                        className="w-full mt-3 px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                                    >
+                                        Clear filter (Show all)
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
 
                 {/* Right Section: Controls */}

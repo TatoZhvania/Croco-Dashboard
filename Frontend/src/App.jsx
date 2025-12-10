@@ -41,6 +41,7 @@ export default function App() {
 
   // UI State
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedEnvironment, setSelectedEnvironment] = useState(null); // null means show all
   const [isEditMode, setIsEditMode] = useState(false);
 
   const canManage = isAdmin;
@@ -52,6 +53,7 @@ export default function App() {
   const { filteredItems, groupedData, sortedCategories } = useDataProcessing(
     items,
     searchTerm,
+    selectedEnvironment,
     categoryMgmt.categoryOrder
   );
   const dragHandlers = useDragAndDrop(items, updateItem, activeEditMode, modals.setPendingMove);
@@ -122,6 +124,8 @@ export default function App() {
         items={items}
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
+        selectedEnvironment={selectedEnvironment}
+        onEnvironmentChange={setSelectedEnvironment}
         isEditMode={activeEditMode}
         isAdmin={isAdmin}
         isAuthenticating={isChecking}

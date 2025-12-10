@@ -2,12 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import { IconComponent } from '../../utils/icons.jsx';
 import { copyToClipboard } from '../../utils/clipboard.jsx';
 import { useLinkStatus } from '../../hooks/useLinkStatus.jsx';
+import { getEnvironmentConfig, ENVIRONMENTS } from '../../utils/environments.jsx';
 import { FaRegEdit, FaCheck, FaUser, FaKey, FaEyeSlash } from "react-icons/fa";
 import { FiTrash2 } from "react-icons/fi";
 
 
 export const DashboardItem = ({ item, onDelete, onEdit, isEditMode, canManage, onDropItem, onUpdateSize, onResizePreview, onResizeEnd }) => {
-    const { id, name, url, description, icon, username, secretKey, isAdminOnly, is_admin_only, size } = item;
+    const { id, name, url, description, icon, username, secretKey, isAdminOnly, is_admin_only, size, environment } = item;
     const [copiedField, setCopiedField] = useState(null);
     const [isResizing, setIsResizing] = useState(false);
     const [previewSize, setPreviewSize] = useState(null);
@@ -16,6 +17,10 @@ export const DashboardItem = ({ item, onDelete, onEdit, isEditMode, canManage, o
     
     // Convert is_admin_only to boolean (database returns 0/1)
     const itemIsAdminOnly = Boolean(isAdminOnly || is_admin_only);
+    
+    // Get environment configuration
+    const itemEnvironment = environment || ENVIRONMENTS.COMMON;
+    const envConfig = getEnvironmentConfig(itemEnvironment);
     
     // Use preview size during resize, otherwise use actual size
     const currentSize = isResizing && previewSize ? previewSize : size;
@@ -246,7 +251,7 @@ export const DashboardItem = ({ item, onDelete, onEdit, isEditMode, canManage, o
                 ${allowDrag && !isResizing ? 'ring-2 ring-yellow-500 border-yellow-300 hover:shadow-yellow-500/50 cursor-move hover:-translate-y-0' : ''}
                 ${isResizing ? 'select-none ring-4 ring-indigo-500 border-indigo-500 shadow-2xl shadow-indigo-500/50' : ''}
             `}
-            title={isExtraSmall ? `${name}${description ? ' - ' + description : ''}\n${url}` : ''}
+            title={isExtraSmall ? `${name}${description ? ' - ' + description : ''}\n${url}\nEnvironment: ${envConfig.label}` : `Environment: ${envConfig.label}`}
         >
             {/* Resize indicator - minimal badge */}
             {isResizing && previewSize && (
@@ -377,7 +382,12 @@ export const DashboardItem = ({ item, onDelete, onEdit, isEditMode, canManage, o
 
             {/* URL Tag */}
             <div className={`flex justify-between items-center mt-3 ${isExtraSmall ? 'text-[20px] mt-2' : 'text-s'}`}>
-                <div className={`text-indigo-600 dark:text-indigo-400 bg-indigo-100 dark:bg-indigo-900/50 rounded-full inline-block self-start truncate ${isExtraSmall ? 'px-3 py-0.5 text-center text-[15px]' : 'px-3 py-1'}`}>
+                <div 
+                    className={`font-medium bg-indigo-100 dark:bg-indigo-900/50 rounded-full inline-block self-start truncate ${isExtraSmall ? 'px-3 py-0.5 text-center text-[15px]' : 'px-3 py-1'}`}
+                    style={{
+                        color: envConfig.color
+                    }}
+                >
                     {(url.startsWith('http://') || url.startsWith('https://')) 
                         ? (new URL(url).hostname || url)
                         : (url.includes('.') ? url.split('/')[0] : 'Link')}

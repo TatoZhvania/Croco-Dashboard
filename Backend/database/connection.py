@@ -39,7 +39,8 @@ def setup_database():
             secret_key TEXT,
             order_index DOUBLE,
             is_admin_only BOOLEAN DEFAULT FALSE,
-            size VARCHAR(20) DEFAULT 'medium'
+            size VARCHAR(20) DEFAULT 'medium',
+            environment VARCHAR(20) DEFAULT 'common'
         );
         """
         cursor.execute(create_table_query)
@@ -80,6 +81,18 @@ def setup_database():
         size_column_exists = cursor.fetchone()[0]
         if size_column_exists == 0:
             cursor.execute("ALTER TABLE dashboard_items ADD COLUMN size VARCHAR(20) DEFAULT 'medium'")
+        
+        # Add environment column to existing tables if it doesn't exist
+        cursor.execute("""
+            SELECT COUNT(*) 
+            FROM information_schema.COLUMNS 
+            WHERE TABLE_SCHEMA = DATABASE() 
+            AND TABLE_NAME = 'dashboard_items' 
+            AND COLUMN_NAME = 'environment'
+        """)
+        environment_column_exists = cursor.fetchone()[0]
+        if environment_column_exists == 0:
+            cursor.execute("ALTER TABLE dashboard_items ADD COLUMN environment VARCHAR(20) DEFAULT 'common'")
         
         conn.commit()
     except Error as e:
