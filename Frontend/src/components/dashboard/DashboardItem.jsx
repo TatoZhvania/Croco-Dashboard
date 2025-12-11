@@ -247,11 +247,11 @@ export const DashboardItem = ({ item, onDelete, onEdit, isEditMode, canManage, o
             onDragLeave={allowDrag ? handleDragLeave : undefined}
             onDrop={allowDrag ? handleDrop : undefined}
             className={`group bg-white/50 dark:bg-gray-800/70 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg hover:shadow-2xl hover:border-indigo-400 transition duration-300 ease-out cursor-pointer backdrop-blur-sm relative overflow-hidden flex flex-col justify-between transform hover:-translate-y-1 min-h-[180px]
-                ${isExtraSmall ? 'p-2' : 'p-4'}
+                ${isExtraSmall ? 'p-2' : 'p-2'}
                 ${allowDrag && !isResizing ? 'ring-2 ring-yellow-500 border-yellow-300 hover:shadow-yellow-500/50 cursor-move hover:-translate-y-0' : ''}
                 ${isResizing ? 'select-none ring-4 ring-indigo-500 border-indigo-500 shadow-2xl shadow-indigo-500/50' : ''}
             `}
-            title={isExtraSmall ? `${name}${description ? ' - ' + description : ''}\n${url}\nEnvironment: ${envConfig.label}` : `Environment: ${envConfig.label}`}
+            title={url.startsWith('http') ? url : `http://${url}`}
         >
             {/* Resize indicator - minimal badge */}
             {isResizing && previewSize && (
@@ -294,7 +294,7 @@ export const DashboardItem = ({ item, onDelete, onEdit, isEditMode, canManage, o
                 <div className="absolute top-2 right-2 flex items-center space-x-1 bg-amber-500/90 dark:bg-amber-600/90 text-white text-xs px-2 py-0.5 rounded-full shadow-md z-10"
                     title="This item is only visible to administrators">
                     <FaEyeSlash size={12} />
-                    {!isExtraSmall && <span className="font-semibold">Admin Only</span>}
+                    {/* {!isExtraSmall && <span className="font-semibold">Admin Only</span>} */}
                 </div>
             )}
             
@@ -380,39 +380,50 @@ export const DashboardItem = ({ item, onDelete, onEdit, isEditMode, canManage, o
                 </div>
             )}
 
-            {/* URL Tag */}
-            <div className={`flex justify-between items-center mt-3 ${isExtraSmall ? 'text-[20px] mt-2' : 'text-s'}`}>
+            {/* URL Tag with Link Status and Environment Badge */}
+            <div className={`flex items-center justify-between gap-2 mt-3 ${isExtraSmall ? 'text-[20px] mt-2' : 'text-s'}`}>
                 <div 
-                    className={`font-medium bg-indigo-100 dark:bg-indigo-900/50 rounded-full inline-block self-start truncate ${isExtraSmall ? 'px-3 py-0.5 text-center text-[15px]' : 'px-3 py-1'}`}
-                    style={{
-                        color: envConfig.color
-                    }}
+                    className={`font-medium bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-full flex items-center gap-2 ${isExtraSmall ? 'px-3 py-0.5 text-center text-[15px]' : 'px-3 py-1'}`}
                 >
-                    {(url.startsWith('http://') || url.startsWith('https://')) 
-                        ? (new URL(url).hostname || url)
-                        : (url.includes('.') ? url.split('/')[0] : 'Link')}
+                    <span className="truncate">
+                        {(url.startsWith('http://') || url.startsWith('https://')) 
+                            ? (new URL(url).hostname || url)
+                            : (url.includes('.') ? url.split('/')[0] : 'Link')}
+                    </span>
+                    <div 
+                        className={`rounded-full transition-all duration-300 flex-shrink-0 ${
+                            isExtraSmall ? 'w-1.5 h-1.5' : 'w-2 h-2'
+                        } ${
+                            status === 'reachable' 
+                                ? 'bg-green-500 shadow-lg shadow-green-500/50 animate-twinkle' 
+                                : status === 'unreachable' 
+                                ? 'bg-red-500 shadow-lg shadow-red-500/50 animate-twinkle-slow' 
+                                : 'bg-gray-400 animate-pulse'
+                        }`}
+                        title={
+                            status === 'reachable' 
+                                ? 'Link is reachable' 
+                                : status === 'unreachable' 
+                                ? 'Link is unreachable' 
+                                : 'Checking link status...'
+                        }
+                    />
+                </div>
+                
+                {/* Environment Badge */}
+                <div 
+                    className={`font-medium rounded-full flex-shrink-0 ${
+                        isExtraSmall ? 'px-2 py-0.5 text-[11px]' : 'px-2 py-1 text-xs'
+                    }`}
+                    style={{
+                        backgroundColor: envConfig.color,
+                        color: envConfig.textColor
+                    }}
+                    title={`Environment: ${envConfig.label}`}
+                >
+                    {envConfig.label}
                 </div>
             </div>
-
-            {/* Link Status Indicator - Bottom Right Corner */}
-            <div 
-                className={`absolute rounded-full transition-all duration-300 ${
-                    isExtraSmall ? 'bottom-1 right-1 w-2 h-2' : 'bottom-2 right-2 w-2 h-2'
-                } ${
-                    status === 'reachable' 
-                        ? 'bg-green-500 shadow-lg shadow-green-500/50 animate-twinkle' 
-                        : status === 'unreachable' 
-                        ? 'bg-red-500 shadow-lg shadow-red-500/50 animate-twinkle-slow' 
-                        : 'bg-gray-400 animate-pulse'
-                }`}
-                title={
-                    status === 'reachable' 
-                        ? 'Link is reachable' 
-                        : status === 'unreachable' 
-                        ? 'Link is unreachable' 
-                        : 'Checking link status...'
-                }
-            />
         </div>
     );
 };

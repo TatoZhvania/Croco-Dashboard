@@ -11,48 +11,48 @@ export const ENVIRONMENTS = {
 export const ENVIRONMENT_CONFIG = {
   [ENVIRONMENTS.PRODUCTION]: {
     label: 'Production',
-    color: '#dc2626',
-    bgColor: 'bg-[#dc2626]',
-    textColor: 'text-white',
-    borderColor: 'border-[#dc2626]',
-    hoverBg: 'hover:bg-[#b91c1c]',
-    ringColor: 'ring-[#dc2626]'
+    color: '#7f1d1d', // Very dark red background
+    textColor: '#fca5a5', // Light red text
+    bgColor: 'bg-[#7f1d1d]',
+    borderColor: 'border-[#7f1d1d]',
+    hoverBg: 'hover:bg-[#991b1b]',
+    ringColor: 'ring-[#7f1d1d]'
   },
   [ENVIRONMENTS.STAGING]: {
     label: 'Staging',
-    color: '#f97316',
-    bgColor: 'bg-[#f97316]',
-    textColor: 'text-white',
-    borderColor: 'border-[#f97316]',
-    hoverBg: 'hover:bg-[#ea580c]',
-    ringColor: 'ring-[#f97316]'
+    color: '#9a3412', // Very dark orange background
+    textColor: '#fdba74', // Light orange text
+    bgColor: 'bg-[#9a3412]',
+    borderColor: 'border-[#9a3412]',
+    hoverBg: 'hover:bg-[#c2410c]',
+    ringColor: 'ring-[#9a3412]'
   },
   [ENVIRONMENTS.QA]: {
     label: 'QA',
-    color: '#9333ea',
-    bgColor: 'bg-[#9333ea]',
-    textColor: 'text-white',
-    borderColor: 'border-[#9333ea]',
-    hoverBg: 'hover:bg-[#7e22ce]',
-    ringColor: 'ring-[#9333ea]'
+    color: '#581c87', // Very dark purple background
+    textColor: '#d8b4fe', // Light purple text
+    bgColor: 'bg-[#581c87]',
+    borderColor: 'border-[#581c87]',
+    hoverBg: 'hover:bg-[#6b21a8]',
+    ringColor: 'ring-[#581c87]'
   },
   [ENVIRONMENTS.DEVELOPMENT]: {
     label: 'Development',
-    color: '#16a34a',
-    bgColor: 'bg-[#16a34a]',
-    textColor: 'text-white',
-    borderColor: 'border-[#16a34a]',
-    hoverBg: 'hover:bg-[#15803d]',
-    ringColor: 'ring-[#16a34a]'
+    color: '#14532d', // Very dark green background
+    textColor: '#86efac', // Light green text
+    bgColor: 'bg-[#14532d]',
+    borderColor: 'border-[#14532d]',
+    hoverBg: 'hover:bg-[#166534]',
+    ringColor: 'ring-[#14532d]'
   },
   [ENVIRONMENTS.COMMON]: {
     label: 'Common',
-    color: '#3b82f6',
-    bgColor: 'bg-[#3b82f6]',
-    textColor: 'text-white',
-    borderColor: 'border-[#3b82f6]',
-    hoverBg: 'hover:bg-[#2563eb]',
-    ringColor: 'ring-[#3b82f6]'
+    color: '#1e40af', // Very dark blue background
+    textColor: '#93c5fd', // Light blue text
+    bgColor: 'bg-[#1e40af]',
+    borderColor: 'border-[#1e40af]',
+    hoverBg: 'hover:bg-[#1d4ed8]',
+    ringColor: 'ring-[#1e40af]'
   }
 };
 

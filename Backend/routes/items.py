@@ -223,8 +223,8 @@ def import_items():
 
         insert_query = """
             INSERT INTO dashboard_items
-            (id, name, url, description, icon, category, category_icon, username, secret_key, order_index, is_admin_only, size)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            (id, name, url, description, icon, category, category_icon, username, secret_key, order_index, is_admin_only, size, environment)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             ON DUPLICATE KEY UPDATE
                 name = VALUES(name),
                 url = VALUES(url),
@@ -236,7 +236,8 @@ def import_items():
                 secret_key = VALUES(secret_key),
                 order_index = VALUES(order_index),
                 is_admin_only = VALUES(is_admin_only),
-                size = VALUES(size)
+                size = VALUES(size),
+                environment = VALUES(environment)
         """
 
         for idx, item in enumerate(incoming_items):
@@ -257,6 +258,7 @@ def import_items():
                 order_index = float(idx)
             is_admin_only = item.get("is_admin_only") or item.get("isAdminOnly") or False
             size = item.get("size") or "medium"
+            environment = item.get("environment") or "common"
 
             cursor.execute(insert_query, (
                 item_id,
@@ -270,7 +272,8 @@ def import_items():
                 secret_key,
                 order_index,
                 is_admin_only,
-                size
+                size,
+                environment
             ))
 
         conn.commit()

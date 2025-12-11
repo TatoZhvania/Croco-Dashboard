@@ -213,7 +213,7 @@ export const Header = ({
                             <div className="relative" ref={menuRef}>
                                 <button
                                     onClick={() => setMenuOpen((open) => !open)}
-                                    className="p-4 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 dark:from-purple-600 dark:to-indigo-700 text-white hover:from-purple-600 hover:to-indigo-700 dark:hover:from-purple-700 dark:hover:to-indigo-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+                                    className="p-4 rounded-full dark:bg-gray-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
                                     title="Settings"
                                 >
                                     <FiMenu size={20} className={`transition-transform duration-300 ${menuOpen ? 'rotate-90' : 'rotate-0'}`} />

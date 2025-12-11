@@ -98,7 +98,7 @@ export const CategorySection = ({
             className={`rounded-xl transition-all duration-200 ${allowDrag ? 'border-2 border-dashed border-gray-300 dark:border-gray-600' : ''}`}
         >
             {/* Category Header */}
-            <div className="flex justify-between items-center w-full p-4 mb-2 text-xl font-bold rounded-xl bg-indigo-500/10 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 transition duration-200 shadow-md">
+            <div className="flex justify-between items-center w-full p-3 mb-2 text-xl font-bold rounded-xl bg-indigo-500/10 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 transition duration-200 shadow-md">
                 
                 {/* Drag Handle (visible in edit mode) - ONLY THIS IS DRAGGABLE */}
                 {allowDrag && (
